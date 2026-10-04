@@ -1,0 +1,42 @@
+DNS :- Domain Name System
+Simple example -
+When you type: google.com -> your computer needs an IP address to communicate with Google's servers.
+DNS answers: google.com -> 142.250.x.x
+So DNS is essentially the phonebook of the Internet.
+
+nslookup :- 
+Simple example - 
+when we type : nslookup example.com - 
+Typical output:
+Server:         192.168.1.1
+Address:        192.168.1.1#53
+Non-authoritative answer:
+Name:   example.com
+Address: 93.184.216.34
+Reverse DNS lookup :-If you have an IP address and want to see whether it maps to a hostname:
+nslookup 8.8.8.8
+You might get:
+Name:    dns.google
+Address: 8.8.8.8
+
+A — IPv4
+nslookup -type=A example.com
+
+AAAA — IPv6
+nslookup -type=AAAA example.com
+
+MX — Mail servers
+nslookup -type=MX example.com
+
+NS — Name servers
+nslookup -type=NS example.com
+
+whois — Domain Registration Information
+Example :- Try - whois example.com
+You might find:
+Creation Date: ...
+Registrar: ...
+Name Server: ...
+Domain Status: ...
+This can help establish when a domain appeared and which registrar/DNS infrastructure it uses.
+
