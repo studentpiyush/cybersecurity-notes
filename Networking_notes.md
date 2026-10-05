@@ -1,3 +1,1131 @@
+
+# Foundational Networking Concepts — Studied in Chat
+
+> This section covers the core concepts we studied from first principles: Ethernet, MAC/IP addressing, LAN/WLAN, devices, DHCP, ARP, ICMP, NAT/PAT, default gateway, subnetting basics, home routers, and phone hotspots.
+
+---
+
+## 1. Network Basics
+
+A **computer network** is a collection of connected devices that exchange data and share services/resources.
+
+~~~text
+                 Internet
+                    |
+                ISP / ONT
+                    |
+             Home Wi-Fi Router
+              /      |       \
+             /       |        \
+          Laptop    Phone      TV
+       192.168.1.10 .11       .12
+~~~
+
+Useful vocabulary:
+
+- **Host** — a device/system participating in network communication.
+- **Client** — requests a service.
+- **Server** — provides a service.
+- **Protocol** — rules that define communication.
+- **Port** — logical transport-layer endpoint for a service.
+- **MAC address** — Layer 2 address associated with a network interface.
+- **IP address** — Layer 3 logical address.
+
+Example:
+
+~~~text
+192.168.1.10:22 -> SSH service
+192.168.1.10:80 -> HTTP service
+~~~
+
+---
+
+## 2. OSI Model
+
+The OSI model is a conceptual seven-layer model:
+
+| Layer | Name | Common examples |
+|---:|---|---|
+| 7 | Application | HTTP, DNS, SMTP, FTP |
+| 6 | Presentation | Data representation, encryption concepts |
+| 5 | Session | Session management |
+| 4 | Transport | TCP, UDP, ports |
+| 3 | Network | IP, routing |
+| 2 | Data Link | Ethernet, Wi-Fi, MAC |
+| 1 | Physical | Cable, radio, optical/electrical signaling |
+
+For beginner networking, the most useful mental map is:
+
+~~~text
+L7 -> Application -> DNS / HTTP / SMTP
+L4 -> Transport  -> TCP / UDP / ports
+L3 -> Network    -> IP / routing
+L2 -> Data Link  -> Ethernet / Wi-Fi / MAC
+L1 -> Physical   -> cable / radio / signal
+~~~
+
+Key memory:
+
+~~~text
+Switch -> primarily Layer 2 -> MAC
+Router -> primarily Layer 3 -> IP
+~~~
+
+Real devices can provide functions at several layers; OSI is a conceptual model.
+
+---
+
+## 3. Network Types
+
+### PAN — Personal Area Network
+
+Small personal network.
+
+~~~text
+Phone <-> Bluetooth earbuds
+~~~
+
+### LAN — Local Area Network
+
+A local network in a home, room, office, building, etc.
+
+### WLAN — Wireless LAN
+
+A LAN using wireless technology such as Wi-Fi.
+
+~~~text
+WLAN is a type of LAN
+~~~
+
+### CAN — Campus Area Network
+
+Connects multiple nearby networks across a campus, such as a university.
+
+### MAN — Metropolitan Area Network
+
+Covers a city/metropolitan area.
+
+### WAN — Wide Area Network
+
+Connects networks across large geographic areas.
+
+### VPN — Virtual Private Network
+
+A VPN is a logical/private connection or tunnel over another network. It is not primarily a geographic category.
+
+Mnemonic:
+
+~~~text
+PAN -> Person
+LAN -> Local
+CAN -> Campus
+MAN -> Metropolitan
+WAN -> Wide
+~~~
+
+---
+
+## 4. Networking Devices
+
+### Hub
+
+- Layer 1
+- Repeats incoming signals
+- Does not make forwarding decisions using MAC addresses
+- Mostly obsolete in modern switched LANs
+
+~~~text
+PC1 --\
+PC2 --- HUB --- PC3
+PC4 --/
+~~~
+
+### Switch
+
+- Primarily Layer 2
+- Uses MAC addresses
+- Forwards Ethernet frames
+- Learns which MAC addresses are reachable through which ports
+
+~~~text
+PC1 --\
+PC2 --- Switch --- Server
+PC3 --/
+~~~
+
+Memory:
+
+~~~text
+Switch -> MAC -> Ethernet frame
+~~~
+
+Some Layer 3 switches can also route IP traffic.
+
+### Router
+
+- Primarily Layer 3
+- Connects different IP networks
+- Uses routing information
+- Commonly acts as the default gateway
+
+~~~text
+LAN 192.168.1.0/24
+        |
+      Router
+        |
+   WAN / Internet
+~~~
+
+Memory:
+
+~~~text
+Router -> IP -> routing
+~~~
+
+### Access Point (AP)
+
+Provides wireless access and normally bridges Wi-Fi clients into a LAN.
+
+### Bridge
+
+Connects Layer 2 network segments. A modern switch is essentially an advanced multi-port bridge.
+
+### Repeater
+
+Regenerates/repeats signals, primarily at the physical layer.
+
+### Modem
+
+Terminates/provides the ISP access technology. Modern broadband devices often combine modem/router functions.
+
+### ONT
+
+Optical Network Terminal, commonly used with fiber.
+
+~~~text
+Fiber -> ONT -> Ethernet -> Router
+~~~
+
+### Gateway
+
+A gateway is a device/function that provides access from one network to another. In a typical LAN, the router's LAN IP can be the client's default gateway.
+
+### DHCP/DNS server
+
+DHCP and DNS are **services**, not necessarily separate physical devices. A home router commonly provides both.
+
+### Firewall
+
+Controls traffic according to rules and may allow, block, log, or inspect traffic depending on its type/configuration.
+
+---
+
+## 5. Ethernet and Wi-Fi
+
+### Ethernet
+
+Ethernet is a family of networking technologies covering physical and data-link behavior. Traditional Ethernet commonly uses network cables.
+
+Ethernet frames include information such as:
+
+- Source MAC
+- Destination MAC
+- Payload
+- Frame error-detection information
+
+### Wi-Fi
+
+Wi-Fi provides wireless LAN connectivity using radio.
+
+Both Ethernet and Wi-Fi can carry IP packets and use MAC addressing at Layer 2.
+
+~~~text
+Ethernet -> usually wired
+Wi-Fi    -> wireless
+~~~
+
+### Important Windows detail
+
+An operating system may call a virtual adapter **Ethernet** even when no physical cable is connected.
+
+For example, virtualization software can create a virtual Ethernet adapter.
+
+~~~text
+VirtualBox
+   |
+   +-> Virtual Ethernet adapter
+~~~
+
+Therefore:
+
+~~~text
+"Ethernet" interface name != proof of a physical cable
+~~~
+
+---
+
+## 6. MAC Address and Ethernet Broadcast
+
+A MAC address is a Layer 2 address associated with a network interface.
+
+Example:
+
+~~~text
+AA:BB:CC:11:22:33
+~~~
+
+The special Ethernet destination:
+
+~~~text
+FF:FF:FF:FF:FF:FF
+~~~
+
+is the **broadcast MAC address**.
+
+It means:
+
+~~~text
+Send the Ethernet frame to all devices in the local
+Layer 2 broadcast domain
+~~~
+
+Why?
+
+~~~text
+FF = 11111111
+~~~
+
+All 48 bits are 1.
+
+Important distinction:
+
+~~~text
+FF:FF:FF:FF:FF:FF -> broadcast destination MAC
+ARP                -> protocol used for IPv4 address-to-MAC resolution
+~~~
+
+ARP requests commonly use the broadcast MAC, but the broadcast MAC itself is not "the ARP protocol."
+
+---
+
+## 7. IP Addresses
+
+An IP address is a logical Layer 3 address.
+
+Example:
+
+~~~text
+192.168.1.10
+~~~
+
+IPv4 uses 32 bits and is written as four decimal octets.
+
+A laptop does **not** inherently have a permanent IP.
+
+Its address may be:
+
+- DHCP-assigned
+- Static/manual
+- Assigned by another network service
+
+The same laptop can have different IPs on different networks:
+
+~~~text
+Home Wi-Fi      -> 192.168.1.10
+College network -> 10.20.4.57
+Phone hotspot   -> 192.168.43.x  (example)
+~~~
+
+The network interface's MAC address is separate from its IP configuration.
+
+---
+
+## 8. Private and Public IPv4
+
+Private IPv4 ranges:
+
+~~~text
+10.0.0.0       - 10.255.255.255
+172.16.0.0     - 172.31.255.255
+192.168.0.0    - 192.168.255.255
+~~~
+
+Private addresses are intended for internal networks and are not directly routed across the public Internet.
+
+A public IP is generally Internet-routable.
+
+Important:
+
+~~~text
+Private != secret
+Public  != automatically exposed
+~~~
+
+Exposure also depends on routing, firewalls, NAT, service configuration, VPNs, port forwarding, etc.
+
+### Same private IP in different networks
+
+This is valid:
+
+~~~text
+Network A                  Network B
+Router -> 192.168.1.1     Router -> 192.168.1.1
+PC     -> 192.168.1.10     PC     -> 192.168.1.10
+~~~
+
+The networks are separate, so their private address spaces can overlap.
+
+**NAT is not the reason this reuse is possible.**
+
+---
+
+## 9. Subnet Mask and Local vs Remote
+
+A subnet mask/prefix tells the host which part of an address represents the network.
+
+Example:
+
+~~~text
+IP   = 192.168.1.10
+Mask = 255.255.255.0
+CIDR = /24
+~~~
+
+This commonly represents:
+
+~~~text
+192.168.1.0/24
+~~~
+
+If the destination is:
+
+~~~text
+192.168.1.20
+~~~
+
+it is on the same /24 subnet, so local Layer 2 delivery can be used.
+
+If the destination is:
+
+~~~text
+8.8.8.8
+~~~
+
+it is outside the local subnet, so the host sends the packet to its default gateway.
+
+This local-vs-remote decision is fundamental to understanding routing.
+
+---
+
+## 10. Default Gateway
+
+The **default gateway** is the next-hop device used for destinations outside the local subnet when no more specific route exists.
+
+Example:
+
+~~~text
+Laptop:
+IP      = 192.168.1.10/24
+Gateway = 192.168.1.1
+~~~
+
+Same-network:
+
+~~~text
+Laptop 192.168.1.10
+       |
+       v
+PC 192.168.1.20
+~~~
+
+Remote:
+
+~~~text
+Laptop 192.168.1.10
+       |
+       v
+Gateway 192.168.1.1
+       |
+       v
+Other networks / Internet
+~~~
+
+### Critical Layer 2 vs Layer 3 distinction
+
+Suppose:
+
+~~~text
+Laptop IP     = 192.168.1.10
+Router IP     = 192.168.1.1
+Remote target = 8.8.8.8
+~~~
+
+The outgoing packet can be thought of as:
+
+~~~text
+Ethernet destination MAC = router MAC
+IP destination           = 8.8.8.8
+~~~
+
+The local Ethernet frame is delivered to the **next hop** (the router), while the IP packet is addressed to the **final remote destination**.
+
+Therefore:
+
+~~~text
+Layer 2 destination -> next-hop MAC
+Layer 3 destination -> final IP
+~~~
+
+Also, 192.168.1.1 can simultaneously be:
+
+~~~text
+Private IP
+Router LAN IP
+Default gateway
+~~~
+
+These are different roles/properties.
+
+---
+
+## 11. DHCP
+
+**DHCP = Dynamic Host Configuration Protocol**
+
+DHCP automatically provides network configuration to clients.
+
+Typical information:
+
+- IP address
+- Subnet mask/prefix
+- Default gateway
+- DNS server
+- Lease information
+
+### DORA
+
+~~~text
+D -> Discover
+O -> Offer
+R -> Request
+A -> Acknowledge
+~~~
+
+Conceptually:
+
+~~~text
+Client                     DHCP Server
+  |                             |
+  |------ DHCP Discover ------->|
+  |<------- DHCP Offer ---------|
+  |------ DHCP Request -------->|
+  |<------ DHCP ACK ------------|
+~~~
+
+DHCP is a **service**, and a home router commonly runs the DHCP server.
+
+Important:
+
+~~~text
+DHCP configures IP settings
+DHCP does not create/assign the network interface's MAC address
+~~~
+
+DHCP can use information such as a client's MAC address for identification/reservations.
+
+---
+
+## 12. ARP
+
+**ARP = Address Resolution Protocol**
+
+For IPv4 local networking, ARP resolves:
+
+~~~text
+IPv4 address -> MAC address
+~~~
+
+Example:
+
+The laptop knows:
+
+~~~text
+Router IP = 192.168.1.1
+~~~
+
+but needs the router's MAC.
+
+It sends:
+
+~~~text
+ARP Request:
+Who has 192.168.1.1?
+Tell 192.168.1.10.
+~~~
+
+The request is commonly broadcast:
+
+~~~text
+Destination MAC = FF:FF:FF:FF:FF:FF
+~~~
+
+The router responds with its MAC:
+
+~~~text
+192.168.1.1 is at AA:BB:CC:DD:EE:FF
+~~~
+
+The laptop can then construct a frame for the router.
+
+### ARP cache
+
+Windows:
+
+~~~powershell
+arp -a
+~~~
+
+Linux:
+
+~~~bash
+ip neigh
+~~~
+
+### ARP and remote destinations
+
+If the target is 8.8.8.8, the laptop normally does not ARP for 8.8.8.8 on the local LAN.
+
+It resolves the MAC of the next hop:
+
+~~~text
+Default gateway IP -> gateway MAC
+~~~
+
+IPv6 does not use ARP; IPv6 uses Neighbor Discovery.
+
+---
+
+## 13. ICMP and Ping
+
+**ICMP = Internet Control Message Protocol**
+
+It is used for network control, diagnostics, and error reporting.
+
+The common ping utility uses:
+
+~~~text
+ICMP Echo Request
+ICMP Echo Reply
+~~~
+
+Example:
+
+~~~bash
+ping 8.8.8.8
+~~~
+
+Conceptually:
+
+~~~text
+Laptop -----------------> Target
+        Echo Request
+
+Laptop <----------------- Target
+        Echo Reply
+~~~
+
+### ARP + ICMP
+
+For pinging a local router, a typical sequence is:
+
+~~~text
+1. Need router MAC
+       |
+2. ARP request/reply
+       |
+3. Send Ethernet frame
+       |
+4. IP packet carries ICMP Echo Request
+       |
+5. Receive ICMP Echo Reply
+~~~
+
+### Important diagnostic rule
+
+~~~text
+Ping failure != guaranteed "no Internet"
+~~~
+
+ICMP can be blocked by a firewall or network policy.
+
+---
+
+## 14. NAT and PAT
+
+### NAT
+
+**NAT = Network Address Translation**
+
+NAT translates network addressing at a boundary.
+
+Typical home flow:
+
+~~~text
+Private LAN
+192.168.1.10
+192.168.1.11
+192.168.1.12
+       |
+       v
+     Router
+       |
+      NAT
+       |
+       v
+Public IPv4 address
+       |
+       v
+   Internet
+~~~
+
+### PAT / NAPT
+
+A common form translates ports as well as addresses, allowing many internal connections to share one public IPv4 address.
+
+Example:
+
+~~~text
+192.168.1.10:50000 -> 49.x.x.x:40001
+192.168.1.11:50001 -> 49.x.x.x:40002
+192.168.1.12:50002 -> 49.x.x.x:40003
+~~~
+
+The router tracks these mappings so response traffic can return to the correct internal host/port.
+
+### NAT is not the same as firewall
+
+~~~text
+NAT      -> translates address/port information
+Firewall -> controls traffic according to rules
+~~~
+
+Home routers commonly use both.
+
+### Port forwarding
+
+Port forwarding can map a public service port to an internal host:
+
+~~~text
+Public:   49.x.x.x:8080
+             |
+             v
+Internal: 192.168.1.10:8080
+~~~
+
+---
+
+## 15. Home Router
+
+A typical home "Wi-Fi router" is a **multifunction device** rather than only a router.
+
+It may combine:
+
+~~~text
++----------------------------------+
+| Home Wi-Fi Router                |
+|                                  |
+| Router / routing                 |
+| Ethernet switch                  |
+| Wi-Fi access point               |
+| DHCP server                      |
+| NAT/PAT                          |
+| Firewall                         |
+| DNS forwarding/resolver function |
++----------------------------------+
+~~~
+
+Typical network:
+
+~~~text
+Internet
+   |
+ISP / ONT / Modem
+   |
+Home Wi-Fi Router
+  /        |        \
+Laptop    Phone      TV
+~~~
+
+So when we say "the router gave the laptop an IP," more precisely the router's **DHCP service** provided the IP configuration.
+
+---
+
+## 16. Phone Hotspot
+
+A smartphone hotspot behaves like a small gateway/router.
+
+~~~text
+Mobile carrier network
+        |
+        v
+      Phone
+   +-----------+
+   | Wi-Fi AP  |
+   | DHCP      |
+   | NAT       |
+   | Gateway   |
+   +-----------+
+        |
+       Wi-Fi
+        |
+      Laptop
+~~~
+
+The phone commonly provides:
+
+- Private IP
+- Subnet configuration
+- Default gateway
+- DNS information
+- Wi-Fi access
+- NAT toward the mobile network
+
+Traffic path:
+
+~~~text
+Laptop -> Phone hotspot -> Mobile carrier -> Internet
+~~~
+
+The exact private IP range depends on the device/software.
+
+---
+
+## 17. End-to-End: Opening an HTTPS Website
+
+Assume:
+
+~~~text
+Laptop       = 192.168.1.10/24
+Gateway      = 192.168.1.1
+DNS resolver = 192.168.1.1
+Site         = example.com
+~~~
+
+### Step 1 — DHCP
+
+The laptop receives IP, subnet, gateway, DNS and lease information.
+
+### Step 2 — DNS
+
+~~~text
+example.com -> DNS -> destination IP
+~~~
+
+### Step 3 — Local/remote decision
+
+The site IP is outside the laptop's local subnet.
+
+### Step 4 — ARP
+
+~~~text
+192.168.1.1 -> router MAC
+~~~
+
+### Step 5 — Local frame
+
+~~~text
+Ethernet/Wi-Fi destination MAC = router MAC
+IP destination                  = website IP
+~~~
+
+### Step 6 — Router
+
+The router routes the packet and may perform NAT/PAT.
+
+### Step 7 — Transport and security
+
+For a normal HTTPS connection:
+
+~~~text
+TCP -> transport
+TLS -> encryption/authentication
+HTTP -> application protocol
+~~~
+
+### Step 8 — Response
+
+The response returns through the network; the router can reverse NAT/PAT state and deliver it to the laptop.
+
+### One-line memory
+
+~~~text
+DHCP -> DNS -> subnet decision -> ARP -> frame -> router -> NAT -> Internet
+~~~
+
+---
+
+## 18. Troubleshooting Model
+
+When Internet access fails, do not immediately assume DNS is the problem.
+
+Work through the layers:
+
+### 1. Link/interface
+
+Check Wi-Fi, Ethernet, virtual adapters, and interface state.
+
+### 2. IP configuration
+
+Windows:
+
+~~~powershell
+ipconfig /all
+~~~
+
+Linux:
+
+~~~bash
+ip addr
+ip route
+~~~
+
+Look for:
+
+~~~text
+IP address
+Subnet mask/prefix
+Default gateway
+DNS server
+~~~
+
+### 3. Gateway
+
+~~~bash
+ping 192.168.1.1
+~~~
+
+Interpret carefully because ICMP may be blocked.
+
+### 4. Routing
+
+Windows:
+
+~~~powershell
+route print
+~~~
+
+Linux:
+
+~~~bash
+ip route
+~~~
+
+### 5. IP connectivity
+
+~~~bash
+ping 8.8.8.8
+~~~
+
+Again, ping is not absolute proof.
+
+### 6. DNS
+
+~~~bash
+nslookup example.com
+~~~
+
+or:
+
+~~~bash
+dig example.com
+~~~
+
+### Important scenario
+
+If:
+
+~~~text
+ping 192.168.1.20 -> works
+ping 8.8.8.8      -> fails
+~~~
+
+Do not start with DNS. 8.8.8.8 is already an IP.
+
+Investigate:
+
+- Default gateway
+- Routing
+- Upstream connectivity
+- Firewall/policy
+
+If:
+
+~~~text
+ping 8.8.8.8          -> works
+nslookup example.com  -> fails
+~~~
+
+DNS becomes a strong suspect.
+
+---
+
+## 19. High-Value Confusions to Avoid
+
+### DHCP vs MAC
+
+Wrong:
+
+~~~text
+DHCP gives the laptop its MAC address
+~~~
+
+Correct:
+
+~~~text
+MAC -> identifies the network interface
+DHCP -> configures IP-layer network settings
+~~~
+
+### Switch vs Router
+
+~~~text
+Switch -> primarily MAC / Layer 2
+Router -> primarily IP / Layer 3
+~~~
+
+### IP vs MAC
+
+~~~text
+IP  -> Layer 3 logical address
+MAC -> Layer 2 interface address
+~~~
+
+### Broadcast MAC vs ARP
+
+~~~text
+FF:FF:FF:FF:FF:FF -> Ethernet broadcast destination
+ARP -> IPv4-to-MAC resolution
+~~~
+
+### NAT vs private-IP reuse
+
+Separate private networks can both use 192.168.1.10.
+
+NAT is not what makes that possible.
+
+### Default Gateway vs DNS
+
+~~~text
+Default gateway -> next hop for remote destinations
+DNS             -> name resolution / DNS records
+~~~
+
+### Ping vs Internet
+
+~~~text
+Ping -> commonly ICMP Echo
+Ping failure -> not always "Internet is down"
+~~~
+
+### Ethernet vs physical cable
+
+~~~text
+Ethernet interface name -> can be virtual
+~~~
+
+### Port vs protocol
+
+Using a Telnet client to connect to port 80 does not mean port 80 is a Telnet service. It only means Telnet is being used as a TCP client.
+
+---
+
+## 20. Quick Mental Map
+
+~~~text
+MAC
+ -> Layer 2
+ -> local interface addressing
+
+IP
+ -> Layer 3
+ -> logical network addressing
+
+Switch
+ -> MAC
+ -> Ethernet frames
+
+Router
+ -> IP
+ -> routing
+
+Subnet mask
+ -> local vs remote decision
+
+Default gateway
+ -> next hop for remote networks
+
+DHCP
+ -> automatic IP configuration
+
+ARP
+ -> IPv4 address -> MAC
+
+FF:FF:FF:FF:FF:FF
+ -> Layer 2 broadcast
+
+ICMP
+ -> control / diagnostics / ping
+
+NAT
+ -> address translation
+
+PAT/NAPT
+ -> address + port translation
+
+Home router
+ -> router + switch + AP + DHCP + NAT + firewall (commonly)
+
+Phone hotspot
+ -> AP + DHCP + gateway + NAT (commonly)
+~~~
+
+---
+
+## 21. Core Commands for Basic Networking
+
+### Windows
+
+~~~powershell
+ipconfig /all
+arp -a
+route print
+ping 8.8.8.8
+nslookup example.com
+~~~
+
+### Linux
+
+~~~bash
+ip addr
+ip route
+ip neigh
+ping 8.8.8.8
+nslookup example.com
+dig example.com
+~~~
+
+### Wireshark filters
+
+~~~text
+arp
+icmp
+dns
+tcp.port == 80
+ip.addr == 192.168.1.10
+~~~
+
+---
+
 # Networking & Cybersecurity Fundamentals - Study Notes
 
 > **Topic covered:** DNS, WHOIS, HTTP/HTTPS, Telnet, TLS/SSL, FTP, SMTP, POP3, IMAP, cleartext vs secure ports, and common cybersecurity terms.
