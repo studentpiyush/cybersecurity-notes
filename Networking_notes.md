@@ -1,48 +1,165 @@
 
-# Foundational Networking Concepts — Studied in Chat
+# Networking Notes — From Fundamentals to Security
 
-> This section covers the core concepts we studied from first principles: Ethernet, MAC/IP addressing, LAN/WLAN, devices, DHCP, ARP, ICMP, NAT/PAT, default gateway, subnetting basics, home routers, and phone hotspots.
+> **Purpose:** Structured networking notes arranged in a learning sequence: **network basics → OSI → addressing → local delivery → routing → network services → application protocols → security concepts → tools → troubleshooting**.
+>
+> Use scanning, packet capture, service testing, and authentication testing only on systems, labs, CTFs, or networks you own or are explicitly authorized to test.
 
 ---
 
-## 1. Network Basics
+## Table of Contents
 
-A **computer network** is a collection of connected devices that exchange data and share services/resources.
+1. [Networking Fundamentals](#1-networking-fundamentals)
+2. [OSI Model](#2-osi-model)
+3. [Network Types](#3-network-types)
+4. [Networking Devices](#4-networking-devices)
+5. [Ethernet, Wi-Fi, and MAC Addresses](#5-ethernet-wi-fi-and-mac-addresses)
+6. [IPv4 Addressing](#6-ipv4-addressing)
+7. [Private and Public IP Addresses](#7-private-and-public-ip-addresses)
+8. [Subnet Mask and CIDR](#8-subnet-mask-and-cidr)
+9. [Default Gateway and Routing](#9-default-gateway-and-routing)
+10. [DHCP](#10-dhcp)
+11. [ARP](#11-arp)
+12. [ICMP and Ping](#12-icmp-and-ping)
+13. [NAT, PAT, and Port Forwarding](#13-nat-pat-and-port-forwarding)
+14. [Home Router](#14-home-router)
+15. [Phone Hotspot](#15-phone-hotspot)
+16. [TCP and UDP](#16-tcp-and-udp)
+17. [Ports and Sockets](#17-ports-and-sockets)
+18. [DNS](#18-dns)
+19. [nslookup](#19-nslookup)
+20. [dig](#20-dig)
+21. [WHOIS](#21-whois)
+22. [HTTP and HTTPS](#22-http-and-https)
+23. [TLS and SSL](#23-tls-and-ssl)
+24. [Telnet and SSH](#24-telnet-and-ssh)
+25. [FTP, FTPS, and SFTP](#25-ftp-ftps-and-sftp)
+26. [SMTP](#26-smtp)
+27. [POP3 and IMAP](#27-pop3-and-imap)
+28. [Cleartext vs Encrypted Protocols](#28-cleartext-vs-encrypted-protocols)
+29. [Sniffing](#29-sniffing)
+30. [Spoofing](#30-spoofing)
+31. [Scanning and Enumeration](#31-scanning-and-enumeration)
+32. [Eavesdropping and MITM](#32-eavesdropping-and-mitm)
+33. [Phishing and Pharming](#33-phishing-and-pharming)
+34. [DoS, DDoS, and Credential Attacks](#34-dos-ddos-and-credential-attacks)
+35. [Complete End-to-End Example](#35-complete-end-to-end-example)
+36. [Troubleshooting Method](#36-troubleshooting-method)
+37. [Practical Commands](#37-practical-commands)
+38. [SOC L1 Takeaways](#38-soc-l1-takeaways)
+39. [Port Cheat Sheet](#39-port-cheat-sheet)
+40. [Final Memory Map](#40-final-memory-map)
+41. [Revision Questions](#41-revision-questions)
 
-~~~text
-                 Internet
-                    |
-                ISP / ONT
-                    |
-             Home Wi-Fi Router
-              /      |       \
-             /       |        \
-          Laptop    Phone      TV
-       192.168.1.10 .11       .12
-~~~
+---
 
-Useful vocabulary:
+# 1. Networking Fundamentals
 
-- **Host** — a device/system participating in network communication.
-- **Client** — requests a service.
-- **Server** — provides a service.
-- **Protocol** — rules that define communication.
-- **Port** — logical transport-layer endpoint for a service.
-- **MAC address** — Layer 2 address associated with a network interface.
-- **IP address** — Layer 3 logical address.
+## 1.1 What is a network?
+
+A **computer network** is a group of connected devices that can exchange data and share services/resources.
 
 Example:
 
 ~~~text
-192.168.1.10:22 -> SSH service
-192.168.1.10:80 -> HTTP service
+                    Internet
+                       |
+                    ISP / ONT
+                       |
+                Home Wi-Fi Router
+                /       |       \
+               /        |        \
+           Laptop      Phone      TV
+        192.168.1.10   .11       .12
+~~~
+
+The communication can involve several layers:
+
+~~~text
+Application  -> DNS / HTTP / SMTP / FTP
+Transport    -> TCP / UDP / ports
+Network      -> IP / routing
+Data Link    -> Ethernet / Wi-Fi / MAC
+Physical     -> cable / radio / optical signal
+~~~
+
+## 1.2 Protocol
+
+A **protocol** is a set of rules that defines how systems communicate.
+
+Examples:
+
+- IP
+- TCP
+- UDP
+- DNS
+- DHCP
+- ARP
+- ICMP
+- HTTP
+- HTTPS
+- FTP
+- SMTP
+- IMAP
+- POP3
+- SSH
+
+Memory:
+
+~~~text
+Protocol = rules for communication
+~~~
+
+## 1.3 Host
+
+A **host** is a device or system that participates in network communication.
+
+Examples:
+
+- Laptop
+- Server
+- Smartphone
+- Virtual machine
+
+## 1.4 Client and server
+
+A **client** requests a service.
+
+A **server** provides a service.
+
+~~~text
+Client -----------------> Server
+       request
+
+Client <----------------- Server
+       response
+~~~
+
+One physical machine can provide multiple services.
+
+## 1.5 Port
+
+A port is a logical transport-layer endpoint associated with a service.
+
+Example:
+
+~~~text
+192.168.1.10:22 -> SSH
+192.168.1.10:80 -> HTTP
+~~~
+
+Think:
+
+~~~text
+IP address -> network-layer host/address
+Port       -> transport-layer service endpoint
 ~~~
 
 ---
 
-## 2. OSI Model
+# 2. OSI Model
 
-The OSI model is a conceptual seven-layer model:
+The **OSI model** is a conceptual seven-layer model.
 
 | Layer | Name | Common examples |
 |---:|---|---|
@@ -52,9 +169,9 @@ The OSI model is a conceptual seven-layer model:
 | 4 | Transport | TCP, UDP, ports |
 | 3 | Network | IP, routing |
 | 2 | Data Link | Ethernet, Wi-Fi, MAC |
-| 1 | Physical | Cable, radio, optical/electrical signaling |
+| 1 | Physical | Cable, radio, electrical/optical signaling |
 
-For beginner networking, the most useful mental map is:
+For practical beginner networking:
 
 ~~~text
 L7 -> Application -> DNS / HTTP / SMTP
@@ -64,56 +181,81 @@ L2 -> Data Link  -> Ethernet / Wi-Fi / MAC
 L1 -> Physical   -> cable / radio / signal
 ~~~
 
-Key memory:
+## Key device relationship
 
 ~~~text
-Switch -> primarily Layer 2 -> MAC
-Router -> primarily Layer 3 -> IP
+Switch -> primarily Layer 2 -> MAC -> Ethernet frames
+Router -> primarily Layer 3 -> IP  -> routing
 ~~~
 
-Real devices can provide functions at several layers; OSI is a conceptual model.
+This is a learning shortcut, not a rule that real equipment can operate at only one layer.
 
 ---
 
-## 3. Network Types
+# 3. Network Types
 
-### PAN — Personal Area Network
+## 3.1 PAN — Personal Area Network
 
 Small personal network.
+
+Example:
 
 ~~~text
 Phone <-> Bluetooth earbuds
 ~~~
 
-### LAN — Local Area Network
+## 3.2 LAN — Local Area Network
 
-A local network in a home, room, office, building, etc.
+A network covering a relatively small local area such as:
 
-### WLAN — Wireless LAN
+- Home
+- Office
+- Room
+- Building
 
-A LAN using wireless technology such as Wi-Fi.
+## 3.3 WLAN — Wireless LAN
+
+A LAN using wireless networking, commonly Wi-Fi.
 
 ~~~text
 WLAN is a type of LAN
 ~~~
 
-### CAN — Campus Area Network
+## 3.4 CAN — Campus Area Network
 
-Connects multiple nearby networks across a campus, such as a university.
+Connects several local networks across a campus.
 
-### MAN — Metropolitan Area Network
+Example:
 
-Covers a city/metropolitan area.
+~~~text
+University
+|- Library
+|- Hostel
+|- Labs
+|- Administration
+~~~
 
-### WAN — Wide Area Network
+## 3.5 MAN — Metropolitan Area Network
 
-Connects networks across large geographic areas.
+Covers a city or metropolitan region.
 
-### VPN — Virtual Private Network
+## 3.6 WAN — Wide Area Network
 
-A VPN is a logical/private connection or tunnel over another network. It is not primarily a geographic category.
+Connects networks over large geographic areas.
 
-Mnemonic:
+The Internet is a huge interconnected system of networks.
+
+## 3.7 VPN — Virtual Private Network
+
+A VPN creates a logical/private connection or tunnel over another network.
+
+~~~text
+Laptop ===== VPN tunnel =====> Company network
+~~~
+
+A VPN is not primarily a geographic category like LAN or WAN.
+
+### Mnemonic
 
 ~~~text
 PAN -> Person
@@ -125,14 +267,13 @@ WAN -> Wide
 
 ---
 
-## 4. Networking Devices
+# 4. Networking Devices
 
-### Hub
+## 4.1 Hub
 
-- Layer 1
-- Repeats incoming signals
-- Does not make forwarding decisions using MAC addresses
-- Mostly obsolete in modern switched LANs
+A hub is a Layer 1 device.
+
+It repeats incoming signals to other ports.
 
 ~~~text
 PC1 --\
@@ -140,12 +281,20 @@ PC2 --- HUB --- PC3
 PC4 --/
 ~~~
 
-### Switch
+It does not intelligently forward traffic using MAC addresses.
 
-- Primarily Layer 2
-- Uses MAC addresses
-- Forwards Ethernet frames
-- Learns which MAC addresses are reachable through which ports
+Hubs are largely obsolete in modern switched networks.
+
+## 4.2 Switch
+
+A switch is primarily a Layer 2 device.
+
+It:
+
+- Receives Ethernet frames
+- Examines destination MAC addresses
+- Learns source MAC addresses
+- Forwards frames through appropriate ports
 
 ~~~text
 PC1 --\
@@ -159,14 +308,13 @@ Memory:
 Switch -> MAC -> Ethernet frame
 ~~~
 
-Some Layer 3 switches can also route IP traffic.
+A Layer 3 switch can also perform routing.
 
-### Router
+## 4.3 Router
 
-- Primarily Layer 3
-- Connects different IP networks
-- Uses routing information
-- Commonly acts as the default gateway
+A router is primarily a Layer 3 device.
+
+It connects different IP networks and uses routing information to forward packets.
 
 ~~~text
 LAN 192.168.1.0/24
@@ -182,73 +330,155 @@ Memory:
 Router -> IP -> routing
 ~~~
 
-### Access Point (AP)
+## 4.4 Access Point
 
-Provides wireless access and normally bridges Wi-Fi clients into a LAN.
+An access point provides wireless access to a LAN.
 
-### Bridge
+~~~text
+Laptop ))))
+       \
+        AP ---- Switch ---- Router
+       /
+Phone ))))
+~~~
 
-Connects Layer 2 network segments. A modern switch is essentially an advanced multi-port bridge.
+## 4.5 Bridge
 
-### Repeater
+A bridge connects Layer 2 network segments.
 
-Regenerates/repeats signals, primarily at the physical layer.
+Modern switches are essentially advanced multi-port bridges.
 
-### Modem
+## 4.6 Repeater
 
-Terminates/provides the ISP access technology. Modern broadband devices often combine modem/router functions.
+A repeater regenerates/repeats a signal, primarily at the physical layer.
 
-### ONT
+## 4.7 Modem
 
-Optical Network Terminal, commonly used with fiber.
+A modem terminates/provides the ISP access technology. Modern broadband equipment can combine modem and router functions.
+
+## 4.8 ONT
+
+An **Optical Network Terminal (ONT)** is commonly used with fiber Internet.
 
 ~~~text
 Fiber -> ONT -> Ethernet -> Router
 ~~~
 
-### Gateway
+## 4.9 Gateway
 
-A gateway is a device/function that provides access from one network to another. In a typical LAN, the router's LAN IP can be the client's default gateway.
+A gateway is a device/function that provides a path from one network to another.
 
-### DHCP/DNS server
+In a typical home network, the router's LAN IP is the client's default gateway.
 
-DHCP and DNS are **services**, not necessarily separate physical devices. A home router commonly provides both.
+## 4.10 Firewall
 
-### Firewall
+A firewall controls traffic according to rules and may:
 
-Controls traffic according to rules and may allow, block, log, or inspect traffic depending on its type/configuration.
+- Allow
+- Block
+- Log
+- Inspect
+
+## 4.11 DHCP and DNS server
+
+DHCP and DNS are **services**, not necessarily separate physical devices.
+
+A home router often provides both.
 
 ---
 
-## 5. Ethernet and Wi-Fi
+# 5. Ethernet, Wi-Fi, and MAC Addresses
 
-### Ethernet
+## 5.1 Ethernet
 
-Ethernet is a family of networking technologies covering physical and data-link behavior. Traditional Ethernet commonly uses network cables.
+Ethernet is a family of networking technologies covering physical and data-link behavior.
 
-Ethernet frames include information such as:
+Traditional Ethernet commonly uses cables.
 
-- Source MAC
+An Ethernet frame contains information such as:
+
 - Destination MAC
+- Source MAC
 - Payload
-- Frame error-detection information
+- Error-detection information
 
-### Wi-Fi
+## 5.2 Wi-Fi
 
 Wi-Fi provides wireless LAN connectivity using radio.
 
-Both Ethernet and Wi-Fi can carry IP packets and use MAC addressing at Layer 2.
+Both Ethernet and Wi-Fi can:
+
+- Carry IP packets
+- Use MAC addresses at Layer 2
+- Connect devices to the same LAN
+
+Main difference:
 
 ~~~text
 Ethernet -> usually wired
 Wi-Fi    -> wireless
 ~~~
 
-### Important Windows detail
+## 5.3 MAC address
 
-An operating system may call a virtual adapter **Ethernet** even when no physical cable is connected.
+A MAC address is a Layer 2 address associated with a network interface.
 
-For example, virtualization software can create a virtual Ethernet adapter.
+Example:
+
+~~~text
+AA:BB:CC:11:22:33
+~~~
+
+Memory:
+
+~~~text
+MAC -> Layer 2
+IP  -> Layer 3
+~~~
+
+One computer can have multiple interfaces and therefore multiple MAC addresses.
+
+## 5.4 Ethernet broadcast MAC
+
+The special MAC address:
+
+~~~text
+FF:FF:FF:FF:FF:FF
+~~~
+
+is the Ethernet **broadcast destination**.
+
+It means:
+
+~~~text
+Deliver the frame to all devices in the local
+Layer 2 broadcast domain.
+~~~
+
+Why all ones?
+
+~~~text
+FF = 11111111
+~~~
+
+All 48 bits of the MAC address are 1.
+
+## 5.5 Broadcast MAC vs ARP
+
+Do not confuse:
+
+~~~text
+FF:FF:FF:FF:FF:FF -> broadcast destination MAC
+ARP                -> IPv4 address-to-MAC resolution protocol
+~~~
+
+ARP requests commonly use the broadcast MAC.
+
+## 5.6 Important Windows detail
+
+Windows may display a virtual network adapter with the name Ethernet.
+
+For example, virtualization software can create:
 
 ~~~text
 VirtualBox
@@ -259,58 +489,17 @@ VirtualBox
 Therefore:
 
 ~~~text
-"Ethernet" interface name != proof of a physical cable
+Windows interface name "Ethernet"
+!= proof that a physical Ethernet cable is connected
 ~~~
 
 ---
 
-## 6. MAC Address and Ethernet Broadcast
+# 6. IPv4 Addressing
 
-A MAC address is a Layer 2 address associated with a network interface.
+## 6.1 What is an IP address?
 
-Example:
-
-~~~text
-AA:BB:CC:11:22:33
-~~~
-
-The special Ethernet destination:
-
-~~~text
-FF:FF:FF:FF:FF:FF
-~~~
-
-is the **broadcast MAC address**.
-
-It means:
-
-~~~text
-Send the Ethernet frame to all devices in the local
-Layer 2 broadcast domain
-~~~
-
-Why?
-
-~~~text
-FF = 11111111
-~~~
-
-All 48 bits are 1.
-
-Important distinction:
-
-~~~text
-FF:FF:FF:FF:FF:FF -> broadcast destination MAC
-ARP                -> protocol used for IPv4 address-to-MAC resolution
-~~~
-
-ARP requests commonly use the broadcast MAC, but the broadcast MAC itself is not "the ARP protocol."
-
----
-
-## 7. IP Addresses
-
-An IP address is a logical Layer 3 address.
+An IP address is a Layer 3 logical address used for IP communication.
 
 Example:
 
@@ -320,15 +509,19 @@ Example:
 
 IPv4 uses 32 bits and is written as four decimal octets.
 
-A laptop does **not** inherently have a permanent IP.
+## 6.2 Does a laptop have a permanent IP?
 
-Its address may be:
+Not necessarily.
 
-- DHCP-assigned
-- Static/manual
-- Assigned by another network service
+A laptop can receive its IP configuration through:
 
-The same laptop can have different IPs on different networks:
+- DHCP
+- Static/manual configuration
+- Another network configuration service
+
+The same laptop can have different IP addresses on different networks.
+
+Example:
 
 ~~~text
 Home Wi-Fi      -> 192.168.1.10
@@ -336,13 +529,28 @@ College network -> 10.20.4.57
 Phone hotspot   -> 192.168.43.x  (example)
 ~~~
 
-The network interface's MAC address is separate from its IP configuration.
+## 6.3 MAC vs IP
+
+~~~text
+MAC -> Layer 2 interface address
+IP  -> Layer 3 logical network address
+~~~
+
+They solve different problems.
+
+## 6.4 DHCP does not create the MAC address
+
+The network interface already has a MAC address.
+
+DHCP configures IP-layer information. It does not create the interface MAC address.
 
 ---
 
-## 8. Private and Public IPv4
+# 7. Private and Public IP Addresses
 
-Private IPv4 ranges:
+## 7.1 Private IPv4 ranges
+
+The three major private IPv4 ranges are:
 
 ~~~text
 10.0.0.0       - 10.255.255.255
@@ -350,38 +558,63 @@ Private IPv4 ranges:
 192.168.0.0    - 192.168.255.255
 ~~~
 
-Private addresses are intended for internal networks and are not directly routed across the public Internet.
-
-A public IP is generally Internet-routable.
-
-Important:
+CIDR form:
 
 ~~~text
-Private != secret
-Public  != automatically exposed
+10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16
 ~~~
 
-Exposure also depends on routing, firewalls, NAT, service configuration, VPNs, port forwarding, etc.
+Private addresses are intended for internal/private networks and are not directly routed across the public Internet.
 
-### Same private IP in different networks
+## 7.2 Public IP
+
+A public IP is generally Internet-routable and is commonly assigned by an ISP, cloud provider, or other public network operator.
+
+## 7.3 Private does not mean secret
+
+~~~text
+Private IP != secret
+Public IP  != automatically exposed
+~~~
+
+Exposure depends on:
+
+- Routing
+- Firewall rules
+- NAT
+- Port forwarding
+- VPN configuration
+- Listening services
+- Access-control rules
+
+## 7.4 Same private IP in different networks
 
 This is valid:
 
 ~~~text
 Network A                  Network B
 Router -> 192.168.1.1     Router -> 192.168.1.1
-PC     -> 192.168.1.10     PC     -> 192.168.1.10
+PC     -> 192.168.1.10    PC     -> 192.168.1.10
 ~~~
 
 The networks are separate, so their private address spaces can overlap.
 
-**NAT is not the reason this reuse is possible.**
+Important:
+
+~~~text
+NAT is NOT the reason separate private networks can reuse
+192.168.1.10.
+~~~
+
+NAT matters when traffic crosses a translation boundary.
 
 ---
 
-## 9. Subnet Mask and Local vs Remote
+# 8. Subnet Mask and CIDR
 
-A subnet mask/prefix tells the host which part of an address represents the network.
+A subnet mask/prefix determines which part of an IPv4 address represents the network.
 
 Example:
 
@@ -391,66 +624,100 @@ Mask = 255.255.255.0
 CIDR = /24
 ~~~
 
-This commonly represents:
+This represents:
 
 ~~~text
 192.168.1.0/24
 ~~~
 
-If the destination is:
+## 8.1 Local destination
+
+Host:
+
+~~~text
+192.168.1.10/24
+~~~
+
+Destination:
 
 ~~~text
 192.168.1.20
 ~~~
 
-it is on the same /24 subnet, so local Layer 2 delivery can be used.
+Both belong to:
 
-If the destination is:
+~~~text
+192.168.1.0/24
+~~~
+
+So the destination is local to the subnet, and local Layer 2 delivery can be used.
+
+## 8.2 Remote destination
+
+Host:
+
+~~~text
+192.168.1.10/24
+~~~
+
+Destination:
 
 ~~~text
 8.8.8.8
 ~~~
 
-it is outside the local subnet, so the host sends the packet to its default gateway.
+The destination is outside the local subnet, so the host uses its default gateway.
 
-This local-vs-remote decision is fundamental to understanding routing.
+## 8.3 Core purpose
+
+The subnet mask helps answer:
+
+~~~text
+"Is this destination on my local network,
+or should I send the packet to a router?"
+~~~
 
 ---
 
-## 10. Default Gateway
+# 9. Default Gateway and Routing
+
+## 9.1 Default gateway
 
 The **default gateway** is the next-hop device used for destinations outside the local subnet when no more specific route exists.
 
 Example:
 
 ~~~text
-Laptop:
-IP      = 192.168.1.10/24
-Gateway = 192.168.1.1
+Laptop IP      = 192.168.1.10/24
+Default gateway = 192.168.1.1
 ~~~
 
-Same-network:
+## 9.2 Same-network traffic
 
 ~~~text
 Laptop 192.168.1.10
        |
+       | local delivery
        v
 PC 192.168.1.20
 ~~~
 
-Remote:
+The laptop can reach the destination directly through the local network.
+
+## 9.3 Remote traffic
 
 ~~~text
 Laptop 192.168.1.10
        |
+       | next hop
        v
-Gateway 192.168.1.1
+Router 192.168.1.1
        |
        v
 Other networks / Internet
 ~~~
 
-### Critical Layer 2 vs Layer 3 distinction
+## 9.4 Critical Layer 2 vs Layer 3 distinction
 
 Suppose:
 
@@ -460,35 +727,45 @@ Router IP     = 192.168.1.1
 Remote target = 8.8.8.8
 ~~~
 
-The outgoing packet can be thought of as:
+The outgoing data can be thought of as:
 
 ~~~text
-Ethernet destination MAC = router MAC
+Ethernet destination MAC = Router MAC
 IP destination           = 8.8.8.8
 ~~~
 
-The local Ethernet frame is delivered to the **next hop** (the router), while the IP packet is addressed to the **final remote destination**.
+The Ethernet frame is delivered to the **next-hop router**, while the IP packet is still addressed to the **final remote destination**.
 
 Therefore:
 
 ~~~text
 Layer 2 destination -> next-hop MAC
-Layer 3 destination -> final IP
+Layer 3 destination -> final IP destination
 ~~~
 
-Also, 192.168.1.1 can simultaneously be:
+This is one of the most important networking concepts to understand.
+
+## 9.5 One address can have several roles
+
+For example:
 
 ~~~text
-Private IP
-Router LAN IP
-Default gateway
+192.168.1.1
 ~~~
 
-These are different roles/properties.
+can simultaneously be:
+
+- A private IP
+- The router's LAN IP
+- The default gateway
+
+These are different properties/roles.
 
 ---
 
-## 11. DHCP
+# 10. DHCP
+
+## 10.1 What is DHCP?
 
 **DHCP = Dynamic Host Configuration Protocol**
 
@@ -502,7 +779,9 @@ Typical information:
 - DNS server
 - Lease information
 
-### DORA
+## 10.2 DORA
+
+The common DHCP process is:
 
 ~~~text
 D -> Discover
@@ -522,20 +801,50 @@ Client                     DHCP Server
   |<------ DHCP ACK ------------|
 ~~~
 
-DHCP is a **service**, and a home router commonly runs the DHCP server.
+## 10.3 Why DHCP is useful
 
-Important:
+Without automatic configuration, a device might need manual entry of:
 
 ~~~text
-DHCP configures IP settings
-DHCP does not create/assign the network interface's MAC address
+IP
+Subnet mask
+Default gateway
+DNS
 ~~~
+
+DHCP automates this process.
+
+## 10.4 DHCP is a service
+
+A home router commonly runs the DHCP server.
+
+Therefore:
+
+~~~text
+"Router gave me an IP"
+~~~
+
+is shorthand for:
+
+~~~text
+The router's DHCP service provided my IP configuration.
+~~~
+
+## 10.5 DHCP and MAC
 
 DHCP can use information such as a client's MAC address for identification/reservations.
 
+But:
+
+~~~text
+DHCP does not assign the MAC address.
+~~~
+
 ---
 
-## 12. ARP
+# 11. ARP
+
+## 11.1 What is ARP?
 
 **ARP = Address Resolution Protocol**
 
@@ -545,7 +854,7 @@ For IPv4 local networking, ARP resolves:
 IPv4 address -> MAC address
 ~~~
 
-Example:
+## 11.2 Example
 
 The laptop knows:
 
@@ -553,31 +862,30 @@ The laptop knows:
 Router IP = 192.168.1.1
 ~~~
 
-but needs the router's MAC.
+but does not know the router's MAC.
 
-It sends:
+It sends an ARP request:
 
 ~~~text
-ARP Request:
 Who has 192.168.1.1?
 Tell 192.168.1.10.
 ~~~
 
-The request is commonly broadcast:
+The Ethernet destination is commonly:
 
 ~~~text
-Destination MAC = FF:FF:FF:FF:FF:FF
+FF:FF:FF:FF:FF:FF
 ~~~
 
-The router responds with its MAC:
+The router replies:
 
 ~~~text
 192.168.1.1 is at AA:BB:CC:DD:EE:FF
 ~~~
 
-The laptop can then construct a frame for the router.
+Now the laptop can send the Ethernet frame to that MAC.
 
-### ARP cache
+## 11.3 ARP cache
 
 Windows:
 
@@ -591,25 +899,45 @@ Linux:
 ip neigh
 ~~~
 
-### ARP and remote destinations
+These can show recently learned local neighbor information.
 
-If the target is 8.8.8.8, the laptop normally does not ARP for 8.8.8.8 on the local LAN.
+## 11.4 ARP and remote destinations
 
-It resolves the MAC of the next hop:
+If the final target is:
 
 ~~~text
-Default gateway IP -> gateway MAC
+8.8.8.8
 ~~~
 
-IPv6 does not use ARP; IPv6 uses Neighbor Discovery.
+the laptop normally does not ARP for 8.8.8.8 on the local LAN.
+
+Instead it resolves the MAC of the next hop:
+
+~~~text
+Default gateway IP -> Gateway MAC
+~~~
+
+## 11.5 IPv6
+
+IPv6 does not use ARP.
+
+IPv6 uses **Neighbor Discovery** mechanisms instead.
 
 ---
 
-## 13. ICMP and Ping
+# 12. ICMP and Ping
+
+## 12.1 ICMP
 
 **ICMP = Internet Control Message Protocol**
 
-It is used for network control, diagnostics, and error reporting.
+It is used for:
+
+- Diagnostics
+- Network control
+- Error reporting
+
+## 12.2 Ping
 
 The common ping utility uses:
 
@@ -634,63 +962,55 @@ Laptop <----------------- Target
         Echo Reply
 ~~~
 
-### ARP + ICMP
+## 12.3 ARP + ICMP
 
-For pinging a local router, a typical sequence is:
+When pinging a local router, a typical sequence can be:
 
 ~~~text
 1. Need router MAC
        |
 2. ARP request/reply
        |
-3. Send Ethernet frame
+3. Build Ethernet frame
        |
 4. IP packet carries ICMP Echo Request
        |
 5. Receive ICMP Echo Reply
 ~~~
 
-### Important diagnostic rule
+## 12.4 Ping failure is not absolute proof
+
+A firewall/network policy may block ICMP.
+
+Therefore:
 
 ~~~text
-Ping failure != guaranteed "no Internet"
+Ping failure != guaranteed "Internet is down"
 ~~~
 
-ICMP can be blocked by a firewall or network policy.
+Ping is one diagnostic signal, not absolute proof of connectivity.
 
 ---
 
-## 14. NAT and PAT
+# 13. NAT, PAT, and Port Forwarding
 
-### NAT
+## 13.1 NAT
 
 **NAT = Network Address Translation**
 
-NAT translates network addressing at a boundary.
+NAT changes IP addressing as traffic crosses a translation boundary.
 
-Typical home flow:
+Typical home network:
 
 ~~~text
-Private LAN
-192.168.1.10
-192.168.1.11
-192.168.1.12
-       |
-       v
-     Router
-       |
-      NAT
-       |
-       v
-Public IPv4 address
-       |
-       v
-   Internet
+Laptop 192.168.1.10 \
+Phone   192.168.1.11  \
+TV      192.168.1.12   -> Router -> NAT -> Public IP -> Internet
 ~~~
 
-### PAT / NAPT
+## 13.2 PAT / NAPT
 
-A common form translates ports as well as addresses, allowing many internal connections to share one public IPv4 address.
+A common form of NAT also translates transport ports.
 
 Example:
 
@@ -700,33 +1020,41 @@ Example:
 192.168.1.12:50002 -> 49.x.x.x:40003
 ~~~
 
-The router tracks these mappings so response traffic can return to the correct internal host/port.
+Many internal connections can therefore share one public IPv4 address.
 
-### NAT is not the same as firewall
+The router keeps translation state so returning traffic can be mapped to the correct internal host/port.
 
-~~~text
-NAT      -> translates address/port information
-Firewall -> controls traffic according to rules
-~~~
-
-Home routers commonly use both.
-
-### Port forwarding
-
-Port forwarding can map a public service port to an internal host:
+## 13.3 NAT is not a firewall
 
 ~~~text
-Public:   49.x.x.x:8080
-             |
-             v
-Internal: 192.168.1.10:8080
+NAT      -> address/port translation
+Firewall -> traffic control using rules
 ~~~
+
+A home router commonly performs both.
+
+## 13.4 Port forwarding
+
+Port forwarding explicitly maps an external service port to an internal host.
+
+Example:
+
+~~~text
+Public:
+49.x.x.x:8080
+      |
+      v
+Internal:
+192.168.1.10:8080
+~~~
+
+Port forwarding can make a private service reachable externally, subject to firewall/routing settings.
 
 ---
 
-## 15. Home Router
+# 14. Home Router
 
-A typical home "Wi-Fi router" is a **multifunction device** rather than only a router.
+A home Wi-Fi router is usually a multifunction networking device.
 
 It may combine:
 
@@ -744,25 +1072,37 @@ It may combine:
 +----------------------------------+
 ~~~
 
-Typical network:
+Typical topology:
 
 ~~~text
-Internet
-   |
-ISP / ONT / Modem
-   |
-Home Wi-Fi Router
-  /        |        \
-Laptop    Phone      TV
+                    Internet
+                       |
+                 ISP / ONT / Modem
+                       |
+                Home Wi-Fi Router
+                /       |       \
+               /        |        \
+            Laptop     Phone      TV
+          192.168.1.10 .11       .12
 ~~~
 
-So when we say "the router gave the laptop an IP," more precisely the router's **DHCP service** provided the IP configuration.
+So when we say:
+
+~~~text
+"The router gave the laptop an IP."
+~~~
+
+the more precise description is:
+
+~~~text
+The router's DHCP service provided the laptop's IP configuration.
+~~~
 
 ---
 
-## 16. Phone Hotspot
+# 15. Phone Hotspot
 
-A smartphone hotspot behaves like a small gateway/router.
+A smartphone hotspot can behave like a small gateway/router.
 
 ~~~text
 Mobile carrier network
@@ -783,11 +1123,11 @@ Mobile carrier network
 
 The phone commonly provides:
 
-- Private IP
-- Subnet configuration
+- Wireless access
+- Private IP configuration
 - Default gateway
 - DNS information
-- Wi-Fi access
+- DHCP
 - NAT toward the mobile network
 
 Traffic path:
@@ -796,55 +1136,1400 @@ Traffic path:
 Laptop -> Phone hotspot -> Mobile carrier -> Internet
 ~~~
 
-The exact private IP range depends on the device/software.
+The exact private IP range depends on the phone/software.
 
 ---
 
-## 17. End-to-End: Opening an HTTPS Website
+# 16. TCP and UDP
+
+## 16.1 TCP
+
+**TCP = Transmission Control Protocol**
+
+Characteristics:
+
+- Connection-oriented
+- Reliable delivery
+- Ordered byte stream
+- Retransmission
+- Flow/congestion control
+
+Common examples:
+
+- HTTP/HTTPS
+- SSH
+- FTP
+- SMTP
+- POP3
+- IMAP
+
+## 16.2 UDP
+
+**UDP = User Datagram Protocol**
+
+Characteristics:
+
+- Connectionless
+- Lower overhead
+- No TCP-style guarantee of delivery/order
+
+Common examples:
+
+- Traditional DNS queries
+- DHCP
+
+Memory:
+
+~~~text
+TCP -> reliability and ordered byte stream
+UDP -> lightweight datagrams
+~~~
+
+---
+
+# 17. Ports and Sockets
+
+A port is a logical service endpoint at the transport layer.
+
+Example:
+
+~~~text
+192.168.1.10:443
+~~~
+
+means:
+
+~~~text
+IP  -> network-layer address
+443 -> transport-layer service endpoint
+~~~
+
+A connection can be described using information such as:
+
+~~~text
+Source IP
+Source port
+Destination IP
+Destination port
+Transport protocol
+~~~
+
+Example:
+
+~~~text
+192.168.1.10:51500 -> 93.184.216.34:443
+~~~
+
+Here:
+
+~~~text
+51500 -> client-side ephemeral port
+443   -> server-side HTTPS port
+~~~
+
+---
+
+# 18. DNS
+
+## 18.1 What is DNS?
+
+**DNS = Domain Name System**
+
+DNS resolves names and stores many types of DNS records.
+
+Basic example:
+
+~~~text
+example.com
+     |
+     v
+DNS
+     |
+     v
+93.184.216.34
+~~~
+
+## 18.2 Important DNS record types
+
+| Record | Meaning |
+|---|---|
+| A | IPv4 address |
+| AAAA | IPv6 address |
+| MX | Mail server |
+| NS | Name server |
+| CNAME | Alias |
+| TXT | Text/policy information |
+| PTR | Reverse DNS |
+
+## 18.3 DNS and port 53
+
+Traditional DNS commonly uses:
+
+~~~text
+UDP 53
+TCP 53
+~~~
+
+UDP is commonly used for normal queries; TCP is also used for cases such as larger responses and zone transfers.
+
+---
+
+# 19. nslookup
+
+nslookup means **Name Server Lookup**.
+
+It is a command-line DNS query utility.
+
+## 19.1 Basic lookup
+
+~~~bash
+nslookup example.com
+~~~
+
+Typical concepts in the output:
+
+~~~text
+Server:     192.168.1.1
+Address:    192.168.1.1#53
+
+Name:       example.com
+Address:    93.184.216.34
+~~~
+
+Interpretation:
+
+- Server = DNS resolver being queried
+- #53 = DNS service port
+- Name = requested domain
+- Address = returned address
+
+## 19.2 A record
+
+~~~bash
+nslookup -query=A example.com
+~~~
+
+## 19.3 AAAA record
+
+~~~bash
+nslookup -query=AAAA example.com
+~~~
+
+## 19.4 Reverse lookup
+
+~~~bash
+nslookup 8.8.8.8
+~~~
+
+This may perform a PTR lookup:
+
+~~~text
+IP -> hostname
+~~~
+
+## 19.5 MX
+
+~~~bash
+nslookup -type=MX example.com
+~~~
+
+## 19.6 NS
+
+~~~bash
+nslookup -type=NS example.com
+~~~
+
+## 19.7 TXT
+
+~~~bash
+nslookup -type=TXT example.com
+~~~
+
+## 19.8 CNAME
+
+~~~bash
+nslookup -type=CNAME www.example.com
+~~~
+
+## 19.9 Specify the DNS server
+
+~~~bash
+nslookup example.com 8.8.8.8
+~~~
+
+---
+
+# 20. dig
+
+dig means **Domain Information Groper**.
+
+It is more detailed and flexible than nslookup for DNS troubleshooting and investigation.
+
+## 20.1 Basic query
+
+~~~bash
+dig example.com
+~~~
+
+Important sections include:
+
+~~~text
+QUESTION SECTION
+ANSWER SECTION
+AUTHORITY SECTION
+ADDITIONAL SECTION
+~~~
+
+Example:
+
+~~~text
+example.com. 300 IN A 93.184.216.34
+~~~
+
+Meaning:
+
+- example.com = domain
+- 300 = TTL in seconds
+- IN = Internet class
+- A = IPv4 record
+- 93.184.216.34 = answer
+
+## 20.2 Useful commands
+
+Only the answer:
+
+~~~bash
+dig example.com +short
+~~~
+
+A record:
+
+~~~bash
+dig example.com A
+~~~
+
+AAAA:
+
+~~~bash
+dig example.com AAAA
+~~~
+
+MX:
+
+~~~bash
+dig example.com MX
+~~~
+
+NS:
+
+~~~bash
+dig example.com NS
+~~~
+
+TXT:
+
+~~~bash
+dig example.com TXT
+~~~
+
+CNAME:
+
+~~~bash
+dig www.example.com CNAME
+~~~
+
+Reverse DNS:
+
+~~~bash
+dig -x 8.8.8.8
+~~~
+
+Specific resolver:
+
+~~~bash
+dig @8.8.8.8 example.com
+dig @1.1.1.1 example.com
+~~~
+
+Trace:
+
+~~~bash
+dig example.com +trace
+~~~
+
+Conceptual trace:
+
+~~~text
+Root DNS
+   |
+   v
+TLD DNS (.com)
+   |
+   v
+Authoritative DNS
+   |
+   v
+Final answer
+~~~
+
+DNSSEC-related queries:
+
+~~~bash
+dig example.com +dnssec
+dig example.com DNSKEY
+~~~
+
+## 20.3 nslookup vs dig
+
+| Feature | nslookup | dig |
+|---|---|---|
+| Quick DNS lookup | Excellent | Excellent |
+| Detailed response | Basic | Excellent |
+| Simple record queries | Yes | Yes |
+| Short output | Limited | Excellent |
+| Trace | No | Yes |
+| Troubleshooting | Good | Excellent |
+| Investigation | Useful | Very useful |
+
+Memory:
+
+~~~text
+nslookup -> quick lookup
+dig      -> detailed investigation
+~~~
+
+---
+
+# 21. WHOIS
+
+whois can provide available **domain registration information** and, for IP addresses, information about the network/organization associated with an allocation.
+
+## 21.1 Domain lookup
+
+~~~bash
+whois example.com
+~~~
+
+Possible information:
+
+- Domain name
+- Registrar
+- Creation date
+- Updated date
+- Expiration date
+- Name servers
+- Domain status
+
+## 21.2 IP lookup
+
+~~~bash
+whois 8.8.8.8
+~~~
+
+This can provide allocation/registration information associated with the address/range.
+
+## 21.3 WHOIS vs DNS
+
+~~~text
+WHOIS
+  -> registration / allocation information
+
+DNS
+  -> names and DNS records
+~~~
+
+A recently registered suspicious domain can be an investigation indicator, but:
+
+~~~text
+new domain != automatically malicious
+old domain != automatically trustworthy
+~~~
+
+WHOIS information may be redacted or privacy-protected.
+
+---
+
+# 22. HTTP and HTTPS
+
+## 22.1 HTTP
+
+**HTTP = Hypertext Transfer Protocol**
+
+Used for web communication.
+
+Common/default port:
+
+~~~text
+TCP 80
+~~~
+
+Flow:
+
+~~~text
+Browser / Client
+      |
+      | HTTP request
+      v
+Web Server
+      |
+      | HTTP response
+      v
+Browser / Client
+~~~
+
+Example:
+
+~~~bash
+curl http://example.com
+~~~
+
+HTTP without TLS is generally cleartext at the application layer.
+
+## 22.2 HTTPS
+
+**HTTPS = HTTP over TLS**
+
+~~~text
+HTTPS = HTTP + TLS
+~~~
+
+Common/default port:
+
+~~~text
+TCP 443
+~~~
+
+Example:
+
+~~~bash
+curl https://example.com
+~~~
+
+HTTPS protects application data in transit using TLS.
+
+Important:
+
+~~~text
+HTTPS != proof that a website is trustworthy
+~~~
+
+A malicious site can also use HTTPS.
+
+---
+
+# 23. TLS and SSL
+
+## 23.1 SSL
+
+**SSL = Secure Sockets Layer**
+
+SSL is the older security protocol family.
+
+SSL 2.0 and SSL 3.0 are obsolete.
+
+## 23.2 TLS
+
+**TLS = Transport Layer Security**
+
+TLS replaced SSL and is the modern protocol family used by HTTPS and many other applications.
+
+Historical map:
+
+~~~text
+SSL 2.0 -> obsolete
+SSL 3.0 -> obsolete
+TLS 1.0 -> obsolete
+TLS 1.1 -> obsolete
+TLS 1.2 -> widely supported
+TLS 1.3 -> modern
+~~~
+
+## 23.3 What TLS provides
+
+### Confidentiality
+
+Protects application data in transit from simple passive observation.
+
+~~~text
+Readable data
+    |
+    v
+Encryption
+    |
+    v
+Ciphertext
+~~~
+
+### Integrity
+
+Helps detect unauthorized modification of protected traffic.
+
+### Authentication
+
+Certificates help a client authenticate the server.
+
+## 23.4 TLS certificate
+
+A certificate may contain:
+
+- Domain/identity information
+- Public key
+- Certificate authority information
+- Validity period
+- Digital signature
+- Other extensions
+
+Conceptually:
+
+~~~text
+Website
+   |
+   | presents certificate
+   v
+Browser
+   |
+   | verifies hostname / chain / validity
+   v
+TLS connection
+~~~
+
+Certificate authorities include organizations such as DigiCert, Let's Encrypt, and GlobalSign.
+
+## 23.5 TLS handshake
+
+Simplified:
+
+~~~text
+Client                         Server
+  |                              |
+  |------ ClientHello ---------->|
+  |<----- ServerHello -----------|
+  |<----- Certificate -----------|
+  |------ Key establishment ---->|
+  |                              |
+  |==== Encrypted application ===|
+~~~
+
+Exact handshake details depend on the TLS version.
+
+## 23.6 Public-key and symmetric cryptography
+
+TLS combines different cryptographic mechanisms.
+
+Conceptually:
+
+~~~text
+Authentication / key establishment
+             |
+             v
+      Shared secret/key
+             |
+             v
+   Symmetric encryption
+             |
+             v
+     Application data
+~~~
+
+## 23.7 Inspect TLS
+
+~~~bash
+curl -v https://example.com
+~~~
+
+or:
+
+~~~bash
+openssl s_client -connect example.com:443
+~~~
+
+TLS 1.2:
+
+~~~bash
+openssl s_client -connect example.com:443 -tls1_2
+~~~
+
+TLS 1.3:
+
+~~~bash
+openssl s_client -connect example.com:443 -tls1_3
+~~~
+
+---
+
+# 24. Telnet and SSH
+
+## 24.1 Telnet
+
+Telnet is an old remote-terminal protocol.
+
+Common/default port:
+
+~~~text
+TCP 23
+~~~
+
+Example:
+
+~~~bash
+telnet 192.168.1.10 23
+~~~
+
+Telnet is generally unencrypted.
+
+Therefore:
+
+~~~text
+Telnet -> cleartext remote administration
+~~~
+
+## 24.2 SSH
+
+**SSH = Secure Shell**
+
+Common/default port:
+
+~~~text
+TCP 22
+~~~
+
+SSH provides encrypted remote administration.
+
+## 24.3 Telnet can also test TCP connectivity
+
+Example:
+
+~~~bash
+telnet 192.168.1.10 80
+~~~
+
+This does **not** mean port 80 is a Telnet service.
+
+It means:
+
+~~~text
+Telnet client -> attempted TCP connection -> port 80
+~~~
+
+Important distinction:
+
+~~~text
+Client/tool being used
+        !=
+Service actually running on the destination port
+~~~
+
+---
+
+# 25. FTP, FTPS, and SFTP
+
+## 25.1 FTP
+
+**FTP = File Transfer Protocol**
+
+Used to transfer files.
+
+FTP normally uses TCP.
+
+Traditional ports:
+
+~~~text
+TCP 21 -> control
+TCP 20 -> data in traditional active mode
+~~~
+
+Most important port:
+
+~~~text
+FTP -> 21
+~~~
+
+## 25.2 FTP control connection
+
+~~~text
+Client ---- TCP 21 ----> FTP Server
+~~~
+
+Commands include:
+
+~~~text
+USER
+PASS
+LIST
+RETR
+STOR
+QUIT
+~~~
+
+## 25.3 FTP data connection
+
+Used for:
+
+- Directory listings
+- Uploads
+- Downloads
+
+The data ports depend on active/passive FTP.
+
+## 25.4 FTP security
+
+Traditional FTP does not provide built-in encryption for normal credentials and data.
+
+## 25.5 FTPS
+
+FTPS is FTP protected with TLS.
+
+A commonly associated implicit-TLS port is:
+
+~~~text
+990
+~~~
+
+## 25.6 SFTP
+
+**SFTP = SSH File Transfer Protocol**
+
+SFTP is a separate protocol from FTP.
+
+It runs over SSH.
+
+Common port:
+
+~~~text
+22
+~~~
+
+Very important:
+
+~~~text
+22 = SSH
+SFTP = file transfer over SSH
+SFTP != FTP with TLS
+~~~
+
+## 25.7 FTP client
+
+~~~bash
+ftp 192.168.56.10
+~~~
+
+Common commands:
+
+~~~text
+ls
+dir
+cd <directory>
+get <file>
+put <file>
+mget <pattern>
+mput <pattern>
+bye
+quit
+~~~
+
+## 25.8 Anonymous FTP
+
+Some servers intentionally allow:
+
+~~~text
+Username: anonymous
+~~~
+
+During an authorized assessment, anonymous access should be checked for accidental exposure of sensitive files.
+
+## 25.9 Authorized Nmap examples
+
+~~~bash
+nmap -sV -p 21 192.168.56.10
+nmap --script ftp-anon -p 21 192.168.56.10
+~~~
+
+---
+
+# 26. SMTP
+
+## 26.1 What is SMTP?
+
+**SMTP = Simple Mail Transfer Protocol**
+
+SMTP is primarily used to send/transfer outgoing email.
+
+~~~text
+Email client
+      |
+      | SMTP
+      v
+Sender mail server
+      |
+      | SMTP
+      v
+Recipient mail server
+~~~
+
+## 26.2 Common ports
+
+| Port | Typical purpose |
+|---:|---|
+| 25 | SMTP server-to-server transfer |
+| 587 | Message submission; STARTTLS commonly used |
+| 465 | SMTP over implicit TLS |
+
+## 26.3 Common commands
+
+~~~text
+EHLO
+MAIL FROM
+RCPT TO
+DATA
+QUIT
+~~~
+
+## 26.4 SMTP security
+
+SMTP can be protected using TLS.
+
+~~~text
+587 -> submission / STARTTLS commonly used
+465 -> implicit TLS
+~~~
+
+## 26.5 SPF
+
+**SPF = Sender Policy Framework**
+
+A domain can publish which mail systems are authorized to send mail for that domain.
+
+Example:
+
+~~~bash
+dig example.com TXT
+~~~
+
+## 26.6 DKIM
+
+**DKIM = DomainKeys Identified Mail**
+
+Uses a cryptographic signature for email. The public key is published in DNS.
+
+## 26.7 DMARC
+
+**DMARC = Domain-based Message Authentication, Reporting & Conformance**
+
+Defines policy/reporting behavior for messages that fail relevant authentication/alignment checks.
+
+Example:
+
+~~~bash
+dig _dmarc.example.com TXT
+~~~
+
+Memory:
+
+~~~text
+SPF  -> authorized senders
+DKIM -> cryptographic signature
+DMARC -> authentication policy/reporting
+~~~
+
+---
+
+# 27. POP3 and IMAP
+
+Both are used to retrieve/access email from a mail server.
+
+~~~text
+SMTP      -> send/transfer
+POP3/IMAP -> retrieve/access
+~~~
+
+## 27.1 POP3
+
+**POP3 = Post Office Protocol version 3**
+
+Main idea:
+
+~~~text
+Download mail from the server
+~~~
+
+Common ports:
+
+~~~text
+110 -> POP3
+995 -> POP3 over TLS
+~~~
+
+Depending on client settings, downloaded messages may be removed from the server.
+
+## 27.2 IMAP
+
+**IMAP = Internet Message Access Protocol**
+
+Main idea:
+
+~~~text
+Access and synchronize mailbox on the server
+~~~
+
+Common ports:
+
+~~~text
+143 -> IMAP
+993 -> IMAP over TLS
+~~~
+
+IMAP is especially useful for multiple devices.
+
+~~~text
+             Mail Server
+           /      |      \
+        Laptop   Phone   Tablet
+~~~
+
+Folders and read/unread state can remain synchronized through the server.
+
+## 27.3 POP3 vs IMAP
+
+| Feature | POP3 | IMAP |
+|---|---|---|
+| Main idea | Download | Access/synchronize |
+| Default port | 110 | 143 |
+| TLS port | 995 | 993 |
+| Multi-device use | Less suitable | Excellent |
+| Folder synchronization | Limited | Yes |
+| Server-side mailbox model | Limited | Strong |
+
+Memory:
+
+~~~text
+SMTP -> Send
+POP3 -> Pull/download
+IMAP -> Mailbox synchronization
+~~~
+
+---
+
+# 28. Cleartext vs Encrypted Protocols
+
+## 28.1 Common cleartext protocols
+
+~~~text
+FTP    -> 21
+Telnet -> 23
+SMTP   -> 25
+HTTP   -> 80
+POP3   -> 110
+IMAP   -> 143
+~~~
+
+## 28.2 Common secure counterparts
+
+~~~text
+SSH        -> 22
+HTTPS      -> 443
+SMTP/TLS   -> 465
+SMTP/STARTTLS commonly -> 587
+FTPS       -> 990
+IMAPS      -> 993
+POP3S      -> 995
+~~~
+
+## 28.3 Port number alone does not prove security
+
+Security depends on:
+
+- Protocol
+- Service configuration
+- TLS/SSH negotiation
+- Protocol version
+- Cipher suite
+- Certificate validation where applicable
+
+Therefore:
+
+~~~text
+Port number != complete security diagnosis
+~~~
+
+---
+
+# 29. Sniffing
+
+**Sniffing = capturing/observing network traffic.**
+
+Common tools:
+
+- Wireshark
+- tcpdump
+- tshark
+
+Example:
+
+~~~bash
+sudo tcpdump -i eth0
+~~~
+
+A packet capture may reveal:
+
+- Source IP
+- Destination IP
+- Protocol
+- Ports
+- Packet metadata
+- Payload when visible and not encrypted
+
+Useful Wireshark filters:
+
+~~~text
+arp
+icmp
+dns
+tcp.port == 80
+ip.addr == 192.168.1.10
+~~~
+
+Security idea:
+
+~~~text
+Cleartext traffic -> payload may be readable
+Encrypted traffic -> payload is protected from simple passive inspection
+~~~
+
+Only capture traffic you are authorized to inspect.
+
+---
+
+# 30. Spoofing
+
+**Spoofing = pretending to be another entity/address.**
+
+## 30.1 IP spoofing
+
+Making a packet appear to come from another source IP.
+
+## 30.2 MAC spoofing
+
+Changing a network interface's MAC address to another value.
+
+## 30.3 Email spoofing
+
+Making an email appear to originate from another sender.
+
+Memory:
+
+~~~text
+Sniffing -> capture
+Spoofing -> pretend / impersonate
+~~~
+
+---
+
+# 31. Scanning and Enumeration
+
+## 31.1 Scanning
+
+**Scanning = discovering hosts, ports, or services.**
+
+Example:
+
+~~~bash
+nmap 192.168.1.10
+~~~
+
+Possible result:
+
+~~~text
+22/tcp  open  ssh
+80/tcp  open  http
+443/tcp open  https
+~~~
+
+Memory:
+
+~~~text
+Scanning -> "What is there?"
+~~~
+
+## 31.2 Enumeration
+
+**Enumeration = collecting more detailed information after discovery.**
+
+Example:
+
+~~~text
+Scanning:
+445/tcp open
+
+Enumeration:
+SMB version?
+Shares?
+Users?
+Accessible resources?
+~~~
+
+Memory:
+
+~~~text
+Scanning    -> discover
+Enumeration -> collect details
+~~~
+
+---
+
+# 32. Eavesdropping and MITM
+
+## 32.1 Eavesdropping
+
+Eavesdropping means secretly listening to communication.
+
+Network sniffing can be one technique used for eavesdropping.
+
+## 32.2 Man-in-the-Middle
+
+A MITM situation places an attacker between two communicating parties.
+
+Normal:
+
+~~~text
+Client <----------------> Server
+~~~
+
+MITM:
+
+~~~text
+Client <------> Attacker <------> Server
+~~~
+
+Potential goals include:
+
+- Observe traffic
+- Modify traffic
+- Redirect communication
+- Attempt credential theft
+
+Strong encryption and correct endpoint/certificate authentication help defend against MITM attacks.
+
+---
+
+# 33. Phishing and Pharming
+
+## 33.1 Phishing
+
+Phishing is social engineering that tricks a user into:
+
+- Clicking
+- Opening a file/link
+- Entering credentials
+- Sending information
+- Performing another unsafe action
+
+Example:
+
+~~~text
+Fake email
+    |
+    v
+Urgent message
+    |
+    v
+Fake login page
+    |
+    v
+Victim enters credentials
+~~~
+
+Memory:
+
+~~~text
+Phishing -> deceive the user
+~~~
+
+## 33.2 Pharming
+
+Pharming focuses on redirecting a victim to a fraudulent destination, often through DNS, host-file, or network manipulation.
+
+Example:
+
+~~~text
+Legitimate domain entered
+          |
+          v
+Traffic redirected
+          |
+          v
+Fraudulent destination
+~~~
+
+Memory:
+
+~~~text
+Phishing -> deception/social engineering
+Pharming -> redirection/manipulation
+~~~
+
+---
+
+# 34. DoS, DDoS, and Credential Attacks
+
+## 34.1 DoS
+
+**Denial of Service**
+
+Attempts to make a service unavailable by exhausting resources or disrupting availability.
+
+## 34.2 DDoS
+
+**Distributed Denial of Service**
+
+Uses multiple systems to generate attack traffic.
+
+~~~text
+Host 1 --\
+Host 2 ---\
+Host 3 ----> Target
+Host 4 ---/
+~~~
+
+## 34.3 Brute force
+
+Repeatedly tries passwords/credentials until a valid value is found.
+
+~~~text
+password1 -> wrong
+password2 -> wrong
+password3 -> wrong
+password4 -> correct
+~~~
+
+Defenses include:
+
+- MFA
+- Strong unique passwords
+- Rate limiting
+- Throttling/lockout
+- Monitoring authentication failures
+
+## 34.4 Credential stuffing
+
+Uses previously leaked username/password combinations against another service.
+
+~~~text
+Leaked credentials
+       |
+       v
+Try the same credentials elsewhere
+~~~
+
+Especially effective when users reuse passwords.
+
+## 34.5 Password spraying
+
+Uses one or a few common passwords against many accounts.
+
+~~~text
+user1 -> common password
+user2 -> common password
+user3 -> common password
+user4 -> common password
+~~~
+
+### Comparison
+
+| Technique | Core idea |
+|---|---|
+| Brute force | Many password guesses against one account/system |
+| Credential stuffing | Reuse leaked credential pairs |
+| Password spraying | Few common passwords across many accounts |
+
+---
+
+# 35. Complete End-to-End Example
+
+This section connects the concepts.
 
 Assume:
 
 ~~~text
-Laptop       = 192.168.1.10/24
-Gateway      = 192.168.1.1
-DNS resolver = 192.168.1.1
-Site         = example.com
+Laptop IP       = 192.168.1.10/24
+Default gateway = 192.168.1.1
+DNS resolver    = 192.168.1.1
+Website         = example.com
 ~~~
 
-### Step 1 — DHCP
+The user enters:
 
-The laptop receives IP, subnet, gateway, DNS and lease information.
+~~~text
+https://example.com
+~~~
 
-### Step 2 — DNS
+## Step 1 — DHCP
+
+When the laptop joins the network, DHCP may provide:
+
+~~~text
+IP       = 192.168.1.10
+Mask     = 255.255.255.0
+Gateway  = 192.168.1.1
+DNS      = 192.168.1.1
+~~~
+
+## Step 2 — DNS
+
+The laptop needs the site's IP:
 
 ~~~text
 example.com -> DNS -> destination IP
 ~~~
 
-### Step 3 — Local/remote decision
+## Step 3 — Local or remote decision
 
-The site IP is outside the laptop's local subnet.
+The laptop compares the destination IP with:
 
-### Step 4 — ARP
+~~~text
+192.168.1.0/24
+~~~
+
+If the destination is outside the local subnet, the laptop chooses its default gateway.
+
+## Step 4 — ARP
+
+If the gateway MAC is not already known:
 
 ~~~text
 192.168.1.1 -> router MAC
 ~~~
 
-### Step 5 — Local frame
+ARP can obtain this mapping.
+
+## Step 5 — Ethernet/Wi-Fi frame
+
+The local frame can be represented as:
 
 ~~~text
-Ethernet/Wi-Fi destination MAC = router MAC
-IP destination                  = website IP
+Ethernet destination MAC = Router MAC
+IP destination           = Website IP
 ~~~
 
-### Step 6 — Router
+This gives the key rule:
 
-The router routes the packet and may perform NAT/PAT.
+~~~text
+Layer 2 -> next hop
+Layer 3 -> final destination
+~~~
 
-### Step 7 — Transport and security
+## Step 6 — Router
 
-For a normal HTTPS connection:
+The router:
+
+1. Receives the frame
+2. Processes the IP packet
+3. Consults routing information
+4. Performs NAT/PAT if applicable
+5. Forwards the traffic
+
+## Step 7 — TCP and HTTPS
+
+For a normal HTTPS session:
 
 ~~~text
 TCP -> transport
@@ -852,29 +2537,58 @@ TLS -> encryption/authentication
 HTTP -> application protocol
 ~~~
 
-### Step 8 — Response
+## Step 8 — Response
 
-The response returns through the network; the router can reverse NAT/PAT state and deliver it to the laptop.
+The server response returns through the network.
 
-### One-line memory
+The router can use NAT/PAT state to map the traffic back to the laptop.
+
+### Complete chain
 
 ~~~text
-DHCP -> DNS -> subnet decision -> ARP -> frame -> router -> NAT -> Internet
+DHCP
+  ->
+DNS
+  ->
+Subnet decision
+  ->
+ARP
+  ->
+Ethernet/Wi-Fi
+  ->
+Router
+  ->
+NAT/PAT
+  ->
+Internet
+  ->
+TCP
+  ->
+TLS
+  ->
+HTTP
 ~~~
 
 ---
 
-## 18. Troubleshooting Model
+# 36. Troubleshooting Method
 
-When Internet access fails, do not immediately assume DNS is the problem.
+When Internet access fails, do not immediately assume DNS is broken.
 
-Work through the layers:
+Work from lower-level connectivity upward.
 
-### 1. Link/interface
+## 36.1 Interface/link
 
-Check Wi-Fi, Ethernet, virtual adapters, and interface state.
+Check:
 
-### 2. IP configuration
+~~~text
+Wi-Fi connected?
+Ethernet connected?
+Interface enabled?
+Virtual adapter present?
+~~~
+
+## 36.2 IP configuration
 
 Windows:
 
@@ -898,15 +2612,17 @@ Default gateway
 DNS server
 ~~~
 
-### 3. Gateway
+## 36.3 Gateway
+
+Try the local gateway where ICMP is permitted:
 
 ~~~bash
 ping 192.168.1.1
 ~~~
 
-Interpret carefully because ICMP may be blocked.
+Remember that ICMP may be blocked.
 
-### 4. Routing
+## 36.4 Routing
 
 Windows:
 
@@ -920,15 +2636,25 @@ Linux:
 ip route
 ~~~
 
-### 5. IP connectivity
+Check whether a default route exists.
+
+## 36.5 IP connectivity
+
+Try a known IP:
 
 ~~~bash
 ping 8.8.8.8
 ~~~
 
-Again, ping is not absolute proof.
+But remember:
 
-### 6. DNS
+~~~text
+Ping failure != guaranteed no Internet
+~~~
+
+## 36.6 DNS
+
+Test:
 
 ~~~bash
 nslookup example.com
@@ -940,162 +2666,47 @@ or:
 dig example.com
 ~~~
 
-### Important scenario
+## 36.7 Diagnostic scenarios
 
-If:
+### Scenario A
 
 ~~~text
 ping 192.168.1.20 -> works
 ping 8.8.8.8      -> fails
 ~~~
 
-Do not start with DNS. 8.8.8.8 is already an IP.
+Do not start with DNS.
+
+Reason:
+
+~~~text
+8.8.8.8 is already an IP address.
+~~~
 
 Investigate:
 
 - Default gateway
-- Routing
+- Route table
 - Upstream connectivity
 - Firewall/policy
 
-If:
+### Scenario B
 
 ~~~text
-ping 8.8.8.8          -> works
-nslookup example.com  -> fails
+ping 8.8.8.8         -> works
+nslookup example.com -> fails
 ~~~
 
 DNS becomes a strong suspect.
 
 ---
 
-## 19. High-Value Confusions to Avoid
+# 37. Practical Commands
 
-### DHCP vs MAC
-
-Wrong:
-
-~~~text
-DHCP gives the laptop its MAC address
-~~~
-
-Correct:
-
-~~~text
-MAC -> identifies the network interface
-DHCP -> configures IP-layer network settings
-~~~
-
-### Switch vs Router
-
-~~~text
-Switch -> primarily MAC / Layer 2
-Router -> primarily IP / Layer 3
-~~~
-
-### IP vs MAC
-
-~~~text
-IP  -> Layer 3 logical address
-MAC -> Layer 2 interface address
-~~~
-
-### Broadcast MAC vs ARP
-
-~~~text
-FF:FF:FF:FF:FF:FF -> Ethernet broadcast destination
-ARP -> IPv4-to-MAC resolution
-~~~
-
-### NAT vs private-IP reuse
-
-Separate private networks can both use 192.168.1.10.
-
-NAT is not what makes that possible.
-
-### Default Gateway vs DNS
-
-~~~text
-Default gateway -> next hop for remote destinations
-DNS             -> name resolution / DNS records
-~~~
-
-### Ping vs Internet
-
-~~~text
-Ping -> commonly ICMP Echo
-Ping failure -> not always "Internet is down"
-~~~
-
-### Ethernet vs physical cable
-
-~~~text
-Ethernet interface name -> can be virtual
-~~~
-
-### Port vs protocol
-
-Using a Telnet client to connect to port 80 does not mean port 80 is a Telnet service. It only means Telnet is being used as a TCP client.
-
----
-
-## 20. Quick Mental Map
-
-~~~text
-MAC
- -> Layer 2
- -> local interface addressing
-
-IP
- -> Layer 3
- -> logical network addressing
-
-Switch
- -> MAC
- -> Ethernet frames
-
-Router
- -> IP
- -> routing
-
-Subnet mask
- -> local vs remote decision
-
-Default gateway
- -> next hop for remote networks
-
-DHCP
- -> automatic IP configuration
-
-ARP
- -> IPv4 address -> MAC
-
-FF:FF:FF:FF:FF:FF
- -> Layer 2 broadcast
-
-ICMP
- -> control / diagnostics / ping
-
-NAT
- -> address translation
-
-PAT/NAPT
- -> address + port translation
-
-Home router
- -> router + switch + AP + DHCP + NAT + firewall (commonly)
-
-Phone hotspot
- -> AP + DHCP + gateway + NAT (commonly)
-~~~
-
----
-
-## 21. Core Commands for Basic Networking
-
-### Windows
+## 37.1 Windows
 
 ~~~powershell
+ipconfig
 ipconfig /all
 arp -a
 route print
@@ -1103,7 +2714,7 @@ ping 8.8.8.8
 nslookup example.com
 ~~~
 
-### Linux
+## 37.2 Linux
 
 ~~~bash
 ip addr
@@ -1114,7 +2725,105 @@ nslookup example.com
 dig example.com
 ~~~
 
-### Wireshark filters
+## 37.3 DNS
+
+~~~bash
+nslookup example.com
+nslookup -type=MX example.com
+nslookup -type=NS example.com
+nslookup -type=TXT example.com
+~~~
+
+~~~bash
+dig example.com
+dig example.com +short
+dig example.com MX +short
+dig example.com NS +short
+dig example.com TXT +short
+dig -x 8.8.8.8 +short
+dig @8.8.8.8 example.com
+dig @1.1.1.1 example.com
+dig example.com +trace
+~~~
+
+## 37.4 WHOIS
+
+~~~bash
+whois example.com
+whois 8.8.8.8
+~~~
+
+## 37.5 HTTP/HTTPS
+
+~~~bash
+curl http://example.com
+curl https://example.com
+curl -I https://example.com
+curl -v https://example.com
+curl -L https://example.com
+curl -s -o /dev/null -w "%{http_code}\n" https://example.com
+~~~
+
+Download:
+
+~~~bash
+curl -O https://example.com/file.zip
+curl -o output.zip https://example.com/file.zip
+~~~
+
+Custom header:
+
+~~~bash
+curl -H "User-Agent: TestClient" https://example.com
+~~~
+
+POST:
+
+~~~bash
+curl -X POST -d "username=test" https://example.com/login
+~~~
+
+JSON POST:
+
+~~~bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test"}' \
+  https://example.com/api
+~~~
+
+## 37.6 TLS
+
+~~~bash
+openssl s_client -connect example.com:443
+openssl s_client -connect example.com:443 -tls1_2
+openssl s_client -connect example.com:443 -tls1_3
+~~~
+
+## 37.7 FTP
+
+~~~bash
+ftp 192.168.56.10
+~~~
+
+## 37.8 Telnet / TCP connectivity test
+
+~~~bash
+telnet 192.168.1.10 23
+telnet 192.168.1.10 80
+~~~
+
+## 37.9 Nmap
+
+Use only against authorized targets.
+
+~~~bash
+nmap -sV -p 21 192.168.56.10
+~~~
+
+## 37.10 Packet analysis
+
+Wireshark filters:
 
 ~~~text
 arp
@@ -1124,1625 +2833,453 @@ tcp.port == 80
 ip.addr == 192.168.1.10
 ~~~
 
----
+tcpdump example:
 
-# Networking & Cybersecurity Fundamentals - Study Notes
-
-> **Topic covered:** DNS, WHOIS, HTTP/HTTPS, Telnet, TLS/SSL, FTP, SMTP, POP3, IMAP, cleartext vs secure ports, and common cybersecurity terms.
->
-> These notes are structured for GitHub and quick revision. Commands should be used only on systems you own or are authorized to test.
-
----
-
-## Table of Contents
-
-1. [Core Network Concepts](#1-core-network-concepts)
-2. [DNS: nslookup](#2-dns-nslookup)
-3. [DNS: dig](#3-dns-dig)
-4. [WHOIS](#4-whois)
-5. [HTTP, HTTPS, and Telnet](#5-http-https-and-telnet)
-6. [TLS and SSL](#6-tls-and-ssl)
-7. [FTP](#7-ftp)
-8. [SMTP](#8-smtp)
-9. [POP3 and IMAP](#9-pop3-and-imap)
-10. [Cleartext vs Secure Ports](#10-cleartext-vs-secure-ports)
-11. [Sniffing, Spoofing, Scanning, and More](#11-sniffing-spoofing-scanning-and-more)
-12. [Port Cheat Sheet](#12-port-cheat-sheet)
-13. [Practical Command Cheat Sheet](#13-practical-command-cheat-sheet)
-14. [Big Picture](#14-big-picture)
-15. [SOC Level 1 Takeaways](#15-soc-level-1-takeaways)
-
----
-
-# 1. Core Network Concepts
-
-A **protocol** is a set of rules that devices use to communicate.
-
-A **port** identifies a network service/application endpoint on a host.
-
-A simplified model is:
-
-```text
-Application
-    |
-    |  HTTP / DNS / SMTP / FTP / SSH
-    v
-Transport
-    |
-    |  TCP / UDP
-    v
-Internet
-    |
-    |  IP
-    v
-Network Access
-    |
-    |  Ethernet / Wi-Fi
-    v
-Physical network
-```
-
-### TCP vs UDP
-
-**TCP**
-- Connection-oriented
-- Reliable
-- Ordered delivery
-- Used by many common services such as HTTP/HTTPS, SSH, FTP, SMTP, IMAP, and POP3.
-
-**UDP**
-- Connectionless
-- Lower overhead
-- Does not provide TCP-style delivery guarantees
-- Commonly used by services such as DNS.
-
----
-
-# 2. DNS: `nslookup`
-
-## What is DNS?
-
-**DNS (Domain Name System)** translates human-readable domain names into IP addresses and can also store other DNS records.
-
-```text
-example.com
-     |
-     v
-DNS
-     |
-     v
-93.184.216.34
-```
-
-## What is `nslookup`?
-
-`nslookup` = **Name Server Lookup**.
-
-It is a command-line utility used to query DNS.
-
-### Basic lookup
-
-```bash
-nslookup example.com
-```
-
-Typical concepts in the output:
-
-```text
-Server:     192.168.1.1
-Address:    192.168.1.1#53
-
-Name:       example.com
-Address:    93.184.216.34
-```
-
-- **Server** = DNS resolver queried by your system.
-- **#53** = DNS service port.
-- **Name** = domain requested.
-- **Address** = IP returned.
-
-### IPv4 / A record
-
-```bash
-nslookup -query=A example.com
-```
-
-### IPv6 / AAAA record
-
-```bash
-nslookup -query=AAAA example.com
-```
-
-### Reverse DNS
-
-```bash
-nslookup 8.8.8.8
-```
-
-This may perform a PTR lookup:
-
-```text
-IP -> hostname
-```
-
-### Mail servers / MX
-
-```bash
-nslookup -type=MX example.com
-```
-
-### Name servers / NS
-
-```bash
-nslookup -type=NS example.com
-```
-
-### TXT records
-
-```bash
-nslookup -type=TXT example.com
-```
-
-### CNAME
-
-```bash
-nslookup -type=CNAME www.example.com
-```
-
-### Use a particular DNS server
-
-```bash
-nslookup example.com 8.8.8.8
-```
-
----
-
-# 3. DNS: `dig`
-
-## What is `dig`?
-
-`dig` = **Domain Information Groper**.
-
-It is a more detailed and flexible DNS troubleshooting/investigation tool than `nslookup`.
-
-### Basic query
-
-```bash
-dig example.com
-```
-
-Important sections:
-
-```text
-QUESTION SECTION
-ANSWER SECTION
-AUTHORITY SECTION
-ADDITIONAL SECTION
-```
-
-A typical A record answer looks like:
-
-```text
-example.com.  300  IN  A  93.184.216.34
-```
-
-Meaning:
-
-- `example.com` = domain
-- `300` = TTL in seconds
-- `IN` = Internet class
-- `A` = IPv4 record
-- `93.184.216.34` = answer
-
-## Useful `dig` commands
-
-### Only return the answer
-
-```bash
-dig example.com +short
-```
-
-### A record
-
-```bash
-dig example.com A
-```
-
-### AAAA record
-
-```bash
-dig example.com AAAA
-```
-
-### MX
-
-```bash
-dig example.com MX
-```
-
-### NS
-
-```bash
-dig example.com NS
-```
-
-### TXT
-
-```bash
-dig example.com TXT
-```
-
-### CNAME
-
-```bash
-dig www.example.com CNAME
-```
-
-### Reverse DNS
-
-```bash
-dig -x 8.8.8.8
-```
-
-### Use a specific DNS resolver
-
-```bash
-dig @8.8.8.8 example.com
-```
-
-Cloudflare DNS:
-
-```bash
-dig @1.1.1.1 example.com
-```
-
-### Trace the DNS resolution path
-
-```bash
-dig example.com +trace
-```
-
-Conceptually:
-
-```text
-Root DNS
-   |
-   v
-TLD DNS (.com)
-   |
-   v
-Authoritative DNS
-   |
-   v
-Final DNS answer
-```
-
-### DNSSEC-related query
-
-```bash
-dig example.com +dnssec
-dig example.com DNSKEY
-```
-
-## `nslookup` vs `dig`
-
-| Feature | `nslookup` | `dig` |
-|---|---|---|
-| Simple DNS lookup | Yes | Yes |
-| Detailed response | Basic | Excellent |
-| `+short` | No | Yes |
-| `+trace` | No | Yes |
-| Troubleshooting | Good | Excellent |
-| Security investigations | Good | Very useful |
-
-**Memory:**
-
-```text
-nslookup -> quick DNS lookup
-dig      -> detailed DNS investigation
-```
-
----
-
-# 4. WHOIS
-
-## What is WHOIS?
-
-`whois` is used to retrieve available **domain registration information** and, for IP addresses, information about the network/organization associated with an allocation.
-
-### Domain lookup
-
-```bash
-whois example.com
-```
-
-Fields may include:
-
-- Domain name
-- Registrar
-- Creation date
-- Updated date
-- Expiration date
-- Name servers
-- Domain status
-
-### IP lookup
-
-```bash
-whois 8.8.8.8
-```
-
-This can provide network/registration information associated with the IP allocation.
-
-## WHOIS vs DNS
-
-```text
-WHOIS
-  |
-  v
-Registration / allocation information
-
-DNS
-  |
-  v
-Domain -> IP, mail servers, name servers, TXT, etc.
-```
-
-### Domain age
-
-A useful investigation field is:
-
-```text
-Creation Date
-```
-
-A recently registered suspicious domain can be a useful indicator, but:
-
-```text
-new domain != malicious
-old domain != trustworthy
-```
-
-WHOIS data may be redacted or privacy-protected.
-
----
-
-# 5. HTTP, HTTPS, and Telnet
-
-# HTTP
-
-**HTTP = Hypertext Transfer Protocol**
-
-Used for web communication.
-
-Default port:
-
-```text
-TCP 80
-```
-
-Simplified flow:
-
-```text
-Browser / Client
-      |
-      | HTTP request
-      v
-Web Server
-      |
-      | HTTP response
-      v
-Browser / Client
-```
-
-Example:
-
-```bash
-curl http://example.com
-```
-
-HTTP traffic is generally **cleartext** at the application layer when no encryption is used.
-
----
-
-# HTTPS
-
-**HTTPS = HTTP over TLS**
-
-```text
-HTTPS = HTTP + TLS
-```
-
-Default port:
-
-```text
-TCP 443
-```
-
-Example:
-
-```bash
-curl https://example.com
-```
-
-HTTPS protects data in transit using TLS.
-
-Important:
-
-```text
-HTTPS != "the website is trustworthy"
-```
-
-HTTPS protects the connection; it does not make a malicious website legitimate.
-
----
-
-# Telnet
-
-**Telnet** is an old protocol for remote terminal access.
-
-Default port:
-
-```text
-TCP 23
-```
-
-Example:
-
-```bash
-telnet 192.168.1.10 23
-```
-
-Telnet is **unencrypted/cleartext** and is therefore unsuitable for secure remote administration.
-
-The secure modern alternative is:
-
-```text
-SSH -> TCP 22
-```
-
-### Telnet as a port test
-
-Telnet can also be used to test whether a TCP service is reachable:
-
-```bash
-telnet 192.168.1.10 80
-```
-
-This does not mean the service on port 80 is Telnet; it only means Telnet is being used as a TCP client.
-
----
-
-# 6. TLS and SSL
-
-## SSL
-
-**SSL = Secure Sockets Layer**
-
-SSL is the older protocol family. Modern SSL versions are obsolete and insecure.
-
-Do not use:
-
-- SSL 2.0
-- SSL 3.0
-
-## TLS
-
-**TLS = Transport Layer Security**
-
-TLS replaced SSL and is the modern security protocol used by HTTPS and many other applications.
-
-Important versions:
-
-```text
-SSL 2.0  -> obsolete
-SSL 3.0  -> obsolete
-TLS 1.0  -> obsolete
-TLS 1.1  -> obsolete
-TLS 1.2  -> widely supported
-TLS 1.3  -> modern
-```
-
-## What TLS provides
-
-### 1. Confidentiality
-
-Encrypts data in transit.
-
-```text
-Readable data
-    |
-    v
-TLS encryption
-    |
-    v
-Ciphertext
-```
-
-### 2. Integrity
-
-Helps detect unauthorized modification of protected data in transit.
-
-### 3. Authentication
-
-Certificates help the client authenticate the server.
-
----
-
-## TLS certificates
-
-A digital certificate can contain:
-
-- Domain name
-- Public key
-- Certificate authority
-- Validity period
-- Digital signature
-
-Simplified:
-
-```text
-Website
-   |
-   | presents certificate
-   v
-Browser
-   |
-   | verifies chain / hostname / validity
-   v
-TLS connection
-```
-
-## Certificate Authorities
-
-Examples include:
-
-- DigiCert
-- Let's Encrypt
-- GlobalSign
-
-Browsers and operating systems maintain trusted CA roots.
-
----
-
-## TLS handshake
-
-A simplified concept:
-
-```text
-Client                         Server
-  |                              |
-  |------ ClientHello ---------->|
-  |<----- ServerHello -----------|
-  |<----- Certificate -----------|
-  |------ Key exchange --------->|
-  |                              |
-  |==== Encrypted traffic =======|
-```
-
-Modern TLS 1.3 has a more efficient handshake than older versions.
-
-## Public-key vs symmetric cryptography
-
-TLS uses cryptographic mechanisms with different jobs:
-
-```text
-Authentication / key establishment
-             |
-             v
-      Shared secret/key
-             |
-             v
-Fast symmetric encryption
-             |
-             v
-   Application data
-```
-
-## Inspect TLS from Kali
-
-```bash
-curl -v https://example.com
-```
-
-Or:
-
-```bash
-openssl s_client -connect example.com:443
-```
-
-TLS 1.2:
-
-```bash
-openssl s_client -connect example.com:443 -tls1_2
-```
-
-TLS 1.3:
-
-```bash
-openssl s_client -connect example.com:443 -tls1_3
-```
-
----
-
-# 7. FTP
-
-## What is FTP?
-
-**FTP = File Transfer Protocol**
-
-Used to transfer files between a client and server.
-
-```text
-Client
-  |
-  | upload / download
-  v
-FTP Server
-```
-
-FTP normally uses TCP.
-
-Traditional FTP ports:
-
-```text
-TCP 21 -> control connection
-TCP 20 -> data connection in traditional active mode
-```
-
-The most important port to remember:
-
-```text
-FTP -> 21
-```
-
-## Two FTP connections
-
-### Control connection
-
-```text
-Client ---- TCP 21 ----> Server
-```
-
-Used for commands such as:
-
-```text
-USER
-PASS
-LIST
-RETR
-STOR
-QUIT
-```
-
-### Data connection
-
-Used for:
-
-- Directory listings
-- File uploads
-- File downloads
-
-The exact data-port behavior depends on active vs passive FTP.
-
-## FTP security
-
-Traditional FTP does **not provide encryption**.
-
-Credentials and file contents can potentially be exposed to a network observer.
-
----
-
-## FTP vs FTPS vs SFTP
-
-```text
-FTP
-  -> traditional FTP
-  -> no built-in encryption
-
-FTPS
-  -> FTP protected with TLS
-
-SFTP
-  -> SSH File Transfer Protocol
-  -> runs over SSH
-  -> not the same protocol as FTP
-```
-
-Common ports:
-
-```text
-FTP  -> 21
-FTPS -> commonly 990 for implicit TLS FTP
-SFTP -> 22 (via SSH)
-```
-
-## FTP client
-
-```bash
-ftp 192.168.56.10
-```
-
-Common FTP commands:
-
-```text
-ls
-dir
-cd <directory>
-get <file>
-put <file>
-mget <pattern>
-mput <pattern>
-bye
-quit
-```
-
-## Anonymous FTP
-
-Some servers intentionally permit:
-
-```text
-Username: anonymous
-```
-
-Anonymous access should be reviewed during authorized security assessments because accidental exposure of files can create security risk.
-
-## Nmap FTP checks in an authorized lab
-
-```bash
-nmap -sV -p 21 192.168.56.10
-```
-
-Anonymous FTP check:
-
-```bash
-nmap --script ftp-anon -p 21 192.168.56.10
-```
-
----
-
-# 8. SMTP
-
-## What is SMTP?
-
-**SMTP = Simple Mail Transfer Protocol**
-
-SMTP is primarily used to **send/transfer outgoing email**.
-
-```text
-Email client
-      |
-      | SMTP
-      v
-Sender mail server
-      |
-      | SMTP
-      v
-Recipient mail server
-```
-
-## Common SMTP ports
-
-| Port | Typical purpose |
-|---:|---|
-| 25 | SMTP server-to-server transfer |
-| 587 | Message submission; STARTTLS commonly used |
-| 465 | SMTP over implicit TLS |
-
-## SMTP commands
-
-You may see commands such as:
-
-```text
-EHLO
-MAIL FROM
-RCPT TO
-DATA
-QUIT
-```
-
-Simplified:
-
-```text
-Client -> EHLO
-Server -> 250 ...
-
-Client -> MAIL FROM:<sender@example.com>
-Client -> RCPT TO:<recipient@example.com>
-Client -> DATA
-Client -> message body
-Client -> .
-```
-
-## SMTP and TLS
-
-SMTP can use TLS to protect connections.
-
-```text
-SMTP
-  |
-  +--> STARTTLS (commonly on 587)
-  |
-  +--> implicit TLS (commonly 465)
-```
-
-## Email security: SPF, DKIM, DMARC
-
-### SPF
-
-**Sender Policy Framework**
-
-A domain can publish which mail systems are authorized to send for it.
-
-Check TXT records:
-
-```bash
-dig example.com TXT
-```
-
-### DKIM
-
-**DomainKeys Identified Mail**
-
-Adds a cryptographic signature to email so the receiving system can verify the signature using a public key published in DNS.
-
-### DMARC
-
-**Domain-based Message Authentication, Reporting & Conformance**
-
-Defines handling/reporting policies for email that fails authentication checks.
-
-Typical DMARC record:
-
-```bash
-dig _dmarc.example.com TXT
-```
-
----
-
-# 9. POP3 and IMAP
-
-Both are email protocols used to **retrieve/access email from a mail server**.
-
-```text
-SMTP -> send
-POP3 / IMAP -> receive or access
-```
-
-# POP3
-
-**POP3 = Post Office Protocol version 3**
-
-POP3 is primarily designed to **download mail** from the server to the client.
-
-Common ports:
-
-```text
-POP3       -> TCP 110
-POP3 + TLS -> TCP 995
-```
-
-Traditional POP3 workflows may remove mail from the server after download, depending on client settings.
-
----
-
-# IMAP
-
-**IMAP = Internet Message Access Protocol**
-
-IMAP is designed for **server-side mailbox access and synchronization**.
-
-Common ports:
-
-```text
-IMAP       -> TCP 143
-IMAP + TLS -> TCP 993
-```
-
-IMAP is especially useful when the same mailbox is accessed from several devices.
-
-Example:
-
-```text
-             Mail Server
-           /      |      \
-        Laptop   Phone   Tablet
-```
-
-Read/unread state and folders can remain synchronized through the server.
-
----
-
-## POP3 vs IMAP
-
-| Feature | POP3 | IMAP |
-|---|---|---|
-| Full name | Post Office Protocol v3 | Internet Message Access Protocol |
-| Default port | 110 | 143 |
-| TLS port | 995 | 993 |
-| Main idea | Download | Access/synchronize |
-| Server-side mailbox model | Limited | Strong |
-| Multiple devices | Less suitable | Excellent |
-| Folder synchronization | Limited | Yes |
-| Read/unread synchronization | Limited | Yes |
-
-### Memory
-
-```text
-SMTP -> Send
-POP3 -> Pull/download
-IMAP -> Internet mailbox synchronization
-```
-
----
-
-# 10. Cleartext vs Secure Ports
-
-## Cleartext
-
-A cleartext application protocol does not provide encryption for the protocol data.
-
-Common examples:
-
-```text
-FTP   -> 21
-SMTP  -> 25
-HTTP  -> 80
-Telnet -> 23
-POP3  -> 110
-IMAP  -> 143
-```
-
-## Secure / encrypted counterparts
-
-```text
-FTPS       -> 990 (common implicit-TLS port)
-SMTP/TLS   -> 465
-Submission -> 587 (STARTTLS commonly used)
-HTTPS      -> 443
-POP3S      -> 995
-IMAPS      -> 993
-SSH        -> 22
-```
-
-### Important nuance
-
-A port number alone does not guarantee encryption.
-
-Security depends on:
-
-- The protocol
-- How the service is configured
-- Whether TLS/SSH is actually negotiated
-- Which version/cipher suite is used
-
----
-
-## Cleartext / Secure matching used in the study quiz
-
-```text
-CLEAR
-21  -> FTP
-25  -> SMTP
-80  -> HTTP
-23  -> Telnet
-110 -> POP3
-143 -> IMAP
-
-SECURE
-990 -> FTPS
-465 -> SMTP over TLS
-587 -> SMTP submission / STARTTLS
-443 -> HTTPS
-995 -> POP3S
-993 -> IMAPS
-22  -> SSH
-```
-
-Quick mapping:
-
-| Cleartext service | Secure counterpart |
-|---|---|
-| FTP (21) | FTPS (commonly 990) / SFTP (22, separate protocol) |
-| SMTP (25) | TLS-protected SMTP (465/587, depending on mode) |
-| HTTP (80) | HTTPS (443) |
-| Telnet (23) | SSH (22) |
-| POP3 (110) | POP3S (995) |
-| IMAP (143) | IMAPS (993) |
-
----
-
-# 11. Sniffing, Spoofing, Scanning, and More
-
-These terms are easy to confuse.
-
-# Sniffing
-
-**Sniffing = capturing/observing network traffic.**
-
-Tools include:
-
-- Wireshark
-- tcpdump
-- tshark
-
-Example:
-
-```bash
+~~~bash
 sudo tcpdump -i eth0
-```
-
-A packet capture can show:
-
-- Source IP
-- Destination IP
-- Protocol
-- Ports
-- Packet metadata
-- Payload when it is visible / not encrypted
-
-Important:
-
-```text
-Cleartext traffic -> contents may be readable
-Encrypted traffic -> payload is protected from simple inspection
-```
+~~~
 
 ---
 
-# Spoofing
+# 38. SOC L1 Takeaways
 
-**Spoofing = pretending to be another entity.**
+A SOC Level 1 analyst should recognize common network patterns quickly.
 
-Examples:
+## Port 21
 
-### IP spoofing
+~~~text
+21 -> FTP control
+~~~
 
-Making a packet appear to come from another source IP.
+Ask whether plain FTP is exposing credentials/data.
 
-### MAC spoofing
+## Port 22
 
-Changing a device's MAC address to another value.
+~~~text
+22 -> SSH
+~~~
 
-### Email spoofing
+Encrypted remote administration.
 
-Making an email appear to come from a different sender.
+SFTP also uses SSH/port 22.
 
-Memory:
+## Port 23
 
-```text
-Sniffing -> listen/capture
-Spoofing -> pretend
-```
+~~~text
+23 -> Telnet
+~~~
 
----
+Generally a security concern because Telnet is cleartext.
 
-# Scanning
+## Port 25
 
-**Scanning = discovering systems, ports, or services.**
+~~~text
+25 -> SMTP
+~~~
 
-Example:
+Commonly server-to-server mail transfer.
 
-```bash
-nmap 192.168.1.10
-```
+## Port 53
 
-A scan may find:
+~~~text
+53 -> DNS
+~~~
 
-```text
-22/tcp  open  ssh
-80/tcp  open  http
-443/tcp open  https
-```
+Traditional DNS commonly uses UDP/TCP 53.
 
-Memory:
+## Port 80
 
-```text
-Scanning -> "What is there?"
-```
+~~~text
+80 -> HTTP
+~~~
 
----
+Normally cleartext without TLS.
 
-# Enumeration
+## Port 443
 
-**Enumeration = gathering more detailed information from discovered services.**
+~~~text
+443 -> HTTPS
+~~~
 
-Example:
+HTTP protected by TLS.
 
-```text
-Scanning:
-445/tcp open
+## Port 110
 
-Enumeration:
-SMB version?
-Shares?
-Users?
-Accessible resources?
-```
+~~~text
+110 -> POP3
+~~~
 
-Memory:
+Plain POP3 is not encrypted by default.
 
-```text
-Scanning   -> discover
-Enumeration -> collect details
-```
+## Port 143
 
----
+~~~text
+143 -> IMAP
+~~~
 
-# Eavesdropping
+Plain IMAP is not encrypted by default.
 
-**Eavesdropping = secretly listening to communication.**
+## Port 465
 
-It is a broad concept. Network sniffing can be one way to eavesdrop on network communications.
+~~~text
+465 -> SMTP over implicit TLS
+~~~
 
----
+## Port 587
 
-# Man-in-the-Middle (MITM)
+~~~text
+587 -> SMTP submission
+    -> STARTTLS commonly used
+~~~
 
-A MITM situation places an attacker between two communicating parties.
+## Port 990
 
-Normal:
+~~~text
+990 -> FTPS, commonly implicit TLS
+~~~
 
-```text
-Client <----------------> Server
-```
+## Port 993
 
-MITM:
+~~~text
+993 -> IMAPS
+~~~
 
-```text
-Client <------> Attacker <------> Server
-```
+## Port 995
 
-Potential goals include:
+~~~text
+995 -> POP3S
+~~~
 
-- Observe traffic
-- Modify traffic
-- Redirect communication
-- Attempt credential theft
+## Network investigation questions
 
-Strong encryption plus proper endpoint/certificate authentication helps defend against MITM attacks.
+~~~text
+WHO?
+ -> source IP / MAC
 
----
+WHERE?
+ -> destination IP
 
-# Phishing
+WHAT?
+ -> protocol
 
-**Phishing = social engineering that tricks a user into clicking, opening, sending, or disclosing something.**
+WHICH?
+ -> port / service
 
-Example:
+HOW?
+ -> TCP or UDP
 
-```text
-Fake email
-    |
-    v
-Urgent message
-    |
-    v
-Fake login page
-    |
-    v
-Victim enters credentials
-```
+ENCRYPTED?
+ -> TLS / SSH or cleartext
 
----
+LOCAL OR REMOTE?
+ -> subnet / routing
 
-# Pharming
-
-**Pharming = redirecting a victim to a fraudulent destination, often through DNS/host/network manipulation.**
-
-Conceptually:
-
-```text
-User enters legitimate domain
-          |
-          v
-Traffic is redirected
-          |
-          v
-Fraudulent site
-```
-
-Phishing primarily uses deception/social engineering; pharming focuses on redirection/manipulation.
+EXPECTED?
+ -> normal activity or suspicious
+~~~
 
 ---
 
-# DoS and DDoS
+# 39. Port Cheat Sheet
 
-### DoS
-
-**Denial of Service**
-
-Attempt to make a service unavailable by consuming or exhausting resources.
-
-### DDoS
-
-**Distributed Denial of Service**
-
-Same general objective, but traffic comes from multiple systems.
-
-```text
-Host 1 --\
-Host 2 ---\
-Host 3 ----> Target
-Host 4 ---/
-```
-
----
-
-# Brute Force
-
-**Brute force = repeatedly trying credentials/passwords until a valid one is found.**
-
-Conceptually:
-
-```text
-password1 -> wrong
-password2 -> wrong
-password3 -> wrong
-password4 -> correct
-```
-
-Defenses include:
-
-- MFA
-- Strong passwords
-- Rate limiting
-- Account lockout / throttling
-- Monitoring failed authentication
-
----
-
-# Credential Stuffing
-
-Uses **previously leaked username/password combinations** against another service.
-
-```text
-Leaked credentials
-       |
-       v
-Try same username/password elsewhere
-```
-
-This works particularly well when users reuse passwords.
-
----
-
-# Password Spraying
-
-Instead of trying many passwords against one account, an attacker tries one or a few common passwords against many accounts.
-
-```text
-user1 -> Password123
-user2 -> Password123
-user3 -> Password123
-user4 -> Password123
-```
-
-This may reduce account-lockout triggers compared with repeatedly attacking a single account.
-
----
-
-## Comparison
-
-| Term | Core idea |
-|---|---|
-| Sniffing | Capture traffic |
-| Spoofing | Pretend to be another entity |
-| Scanning | Discover hosts/ports/services |
-| Enumeration | Gather detailed service information |
-| Eavesdropping | Secretly listen to communication |
-| MITM | Intercept communication between parties |
-| Phishing | Trick the user |
-| Pharming | Redirect to a fraudulent destination |
-| DoS | Disrupt availability |
-| DDoS | Distributed DoS |
-| Brute force | Repeated credential guessing |
-| Credential stuffing | Reuse leaked credentials |
-| Password spraying | Few common passwords across many accounts |
-
----
-
-# 12. Port Cheat Sheet
-
-## Core ports from these topics
-
-| Port | Protocol / Service | Typical security note |
+| Port | Protocol / Service | Main idea |
 |---:|---|---|
-| 20 | FTP data (traditional active mode) | Cleartext FTP |
-| 21 | FTP control | Cleartext FTP |
-| 22 | SSH / SFTP | Encrypted |
-| 23 | Telnet | Cleartext |
-| 25 | SMTP | Usually server-to-server SMTP; TLS may be negotiated |
-| 53 | DNS | Classic DNS is not encrypted by default |
-| 80 | HTTP | Cleartext |
-| 110 | POP3 | Cleartext |
-| 143 | IMAP | Cleartext |
-| 443 | HTTPS | TLS-protected HTTP |
-| 465 | SMTP over implicit TLS | Encrypted |
+| 20 | FTP data | Traditional active-mode data |
+| 21 | FTP | Control connection |
+| 22 | SSH / SFTP | Encrypted SSH; SFTP is separate from FTP |
+| 23 | Telnet | Cleartext remote terminal |
+| 25 | SMTP | Mail transfer |
+| 53 | DNS | Name resolution |
+| 80 | HTTP | Cleartext web |
+| 110 | POP3 | Mail retrieval |
+| 143 | IMAP | Mailbox access |
+| 443 | HTTPS | HTTP over TLS |
+| 465 | SMTP over TLS | Implicit TLS SMTP |
 | 587 | SMTP submission | STARTTLS commonly used |
-| 990 | FTPS | Common implicit TLS FTP port |
+| 990 | FTPS | Common implicit TLS FTP |
 | 993 | IMAPS | TLS-protected IMAP |
 | 995 | POP3S | TLS-protected POP3 |
 
-### Important distinction
+### Fast memory
 
-```text
-22 = SSH
-SFTP = file transfer over SSH
-```
-
-Do not describe port 22 as "secure FTP". SFTP is a **separate protocol**.
-
----
-
-# 13. Practical Command Cheat Sheet
-
-## DNS
-
-```bash
-nslookup example.com
-nslookup -type=MX example.com
-nslookup -type=NS example.com
-```
-
-```bash
-dig example.com
-dig example.com +short
-dig example.com MX +short
-dig example.com NS +short
-dig example.com TXT +short
-dig -x 8.8.8.8 +short
-dig @8.8.8.8 example.com
-dig example.com +trace
-```
-
-## WHOIS
-
-```bash
-whois example.com
-whois 8.8.8.8
-```
-
-## HTTP / HTTPS
-
-```bash
-curl http://example.com
-curl https://example.com
-curl -I https://example.com
-curl -v https://example.com
-curl -L https://example.com
-curl -s -o /dev/null -w "%{http_code}\n" https://example.com
-```
-
-### Download
-
-```bash
-curl -O https://example.com/file.zip
-curl -o output.zip https://example.com/file.zip
-```
-
-### Custom header
-
-```bash
-curl -H "User-Agent: TestClient" https://example.com
-```
-
-### POST
-
-```bash
-curl -X POST -d "username=test" https://example.com/login
-```
-
-### JSON POST
-
-```bash
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test"}' \
-  https://example.com/api
-```
-
-## TLS
-
-```bash
-openssl s_client -connect example.com:443
-openssl s_client -connect example.com:443 -tls1_2
-openssl s_client -connect example.com:443 -tls1_3
-```
-
-## FTP
-
-```bash
-ftp 192.168.56.10
-```
-
-## Telnet / TCP connectivity test
-
-```bash
-telnet 192.168.1.10 23
-telnet 192.168.1.10 80
-```
-
----
-
-# 14. Big Picture
-
-The tools and protocols fit together like this:
-
-```text
-                         NETWORK INVESTIGATION
-                                  |
-         +------------------------+------------------------+
-         |                        |                        |
-         v                        v                        v
-       DNS                    Registration               Web
-         |                        |                        |
-    nslookup / dig              whois                curl / browser
-         |                        |                        |
-         v                        v                        v
-  IP / MX / NS / TXT       Domain/IP info         HTTP / HTTPS
-         |
-         v
-   Network service
-         |
-         +-------------------+
-         |                   |
-         v                   v
-       Cleartext            Encrypted
-         |                   |
-     HTTP / FTP /       HTTPS / SSH /
-     Telnet / etc.      TLS-protected email
-```
-
----
-
-# 15. SOC Level 1 Takeaways
-
-A SOC analyst should be able to recognize these patterns quickly.
-
-## If you see port 80
-
-```text
-80 -> HTTP -> cleartext web
-```
-
-Investigate the request/response and whether sensitive information is being transmitted without encryption.
-
-## If you see port 443
-
-```text
-443 -> HTTPS -> TLS-protected web
-```
-
-For deeper investigation, inspect TLS metadata, certificate details, destination reputation, and application behavior.
-
-## If you see port 23
-
-```text
-23 -> Telnet -> cleartext remote terminal
-```
-
-This is generally a security concern on modern networks.
-
-## If you see port 22
-
-```text
-22 -> SSH
-```
-
-Usually encrypted remote administration.
-
-## If you see port 21
-
-```text
-21 -> FTP control
-```
-
-Check whether plain FTP is exposing credentials/data and whether secure alternatives are available.
-
-## If you see ports 110 / 143
-
-```text
+~~~text
+21  -> FTP
+22  -> SSH
+23  -> Telnet
+25  -> SMTP
+53  -> DNS
+80  -> HTTP
 110 -> POP3
 143 -> IMAP
-```
-
-Investigate whether encrypted alternatives are being used:
-
-```text
-995 -> POP3S
+443 -> HTTPS
+465 -> SMTP over implicit TLS
+587 -> SMTP submission / STARTTLS
+990 -> FTPS
 993 -> IMAPS
-```
-
-## If you see SMTP ports
-
-```text
-25  -> SMTP
-465 -> SMTP over TLS
-587 -> submission / STARTTLS commonly
-```
-
-In a SOC, email security also means understanding:
-
-```text
-SPF + DKIM + DMARC
-```
+995 -> POP3S
+~~~
 
 ---
 
-# Final Memory Map
+# 40. Final Memory Map
 
-```text
-DNS
+~~~text
+NETWORK BASICS
  |
- +-- nslookup -> simple DNS lookup
- +-- dig      -> detailed DNS lookup
- +-- 53       -> DNS
+ +-- Protocol -> communication rules
+ +-- Host     -> networked system
+ +-- Client   -> requests a service
+ +-- Server   -> provides a service
+ +-- Port     -> logical service endpoint
 
-WHOIS
+OSI
  |
- +-- domain registration information
- +-- IP/network allocation information
+ +-- L7 Application -> DNS / HTTP / SMTP / FTP
+ +-- L4 Transport   -> TCP / UDP / ports
+ +-- L3 Network     -> IP / routing
+ +-- L2 Data Link   -> Ethernet / Wi-Fi / MAC
+ +-- L1 Physical    -> cable / radio
 
-WEB
+DEVICES
  |
- +-- HTTP  -> 80  -> cleartext
- +-- HTTPS -> 443 -> TLS
+ +-- Hub       -> Layer 1 / repeat
+ +-- Switch    -> Layer 2 / MAC
+ +-- Router    -> Layer 3 / IP
+ +-- AP        -> wireless access
+ +-- Bridge    -> Layer 2 segment connection
+ +-- Repeater  -> signal regeneration
+ +-- Modem     -> ISP access technology
+ +-- ONT       -> fiber termination
+ +-- Gateway   -> path to another network
+ +-- Firewall  -> traffic control
 
-REMOTE TERMINAL
+ADDRESSING
  |
- +-- Telnet -> 23 -> cleartext
- +-- SSH    -> 22 -> encrypted
+ +-- MAC -> Layer 2
+ +-- IP  -> Layer 3
+ +-- Private IP
+ |    +-- 10.0.0.0/8
+ |    +-- 172.16.0.0/12
+ |    +-- 192.168.0.0/16
+ |
+ +-- Public IP -> generally Internet-routable
+ +-- Subnet    -> local vs remote decision
+ +-- Gateway   -> next hop for remote traffic
 
-FILE TRANSFER
+LOCAL DELIVERY
  |
- +-- FTP  -> 21 -> cleartext
- +-- FTPS -> 990 (common) -> TLS
- +-- SFTP -> 22 -> SSH-based, separate protocol
+ +-- ARP
+ |    -> IPv4 address -> MAC
+ |
+ +-- FF:FF:FF:FF:FF:FF
+ |    -> Ethernet broadcast
+ |
+ +-- Ethernet/Wi-Fi
+ |    -> local frame delivery
 
-EMAIL
+NETWORK SERVICES
  |
- +-- SMTP -> 25 / 465 / 587 -> send/submit
- +-- POP3 -> 110 / 995      -> download
- +-- IMAP -> 143 / 993      -> access/synchronize
+ +-- DHCP -> automatic IP configuration
+ |    +-- Discover
+ |    +-- Offer
+ |    +-- Request
+ |    +-- Acknowledge
+ |
+ +-- DNS  -> name resolution
+ +-- ICMP -> control / diagnostics / ping
+ +-- NAT  -> address translation
+ +-- PAT  -> address + port translation
 
-SECURITY TERMS
+APPLICATION PROTOCOLS
  |
- +-- Sniffing       -> capture traffic
- +-- Spoofing       -> impersonate
- +-- Scanning       -> discover
- +-- Enumeration    -> gather details
- +-- MITM           -> intercept
- +-- Phishing       -> trick users
- +-- Pharming       -> redirect
- +-- DoS/DDoS       -> disrupt availability
- +-- Brute force    -> repeated guessing
+ +-- HTTP  -> 80
+ +-- HTTPS -> 443 + TLS
+ +-- FTP   -> 21
+ +-- FTPS  -> 990 (common)
+ +-- SFTP  -> 22 via SSH
+ +-- Telnet -> 23
+ +-- SSH    -> 22
+ +-- SMTP -> 25 / 465 / 587
+ +-- POP3 -> 110 / 995
+ +-- IMAP -> 143 / 993
+
+SECURITY
+ |
+ +-- Sniffing -> capture
+ +-- Spoofing -> impersonate
+ +-- Scanning -> discover
+ +-- Enumeration -> gather details
+ +-- Eavesdropping -> secretly listen
+ +-- MITM -> intercept
+ +-- Phishing -> deceive
+ +-- Pharming -> redirect
+ +-- DoS/DDoS -> disrupt availability
+ +-- Brute force -> repeated guessing
  +-- Credential stuffing -> leaked credentials
- +-- Password spraying   -> common password across accounts
-```
+ +-- Password spraying -> common password across accounts
+
+END-TO-END
+ |
+ DHCP
+  ->
+ DNS
+  ->
+ Subnet decision
+  ->
+ ARP
+  ->
+ Ethernet/Wi-Fi
+  ->
+ Router
+  ->
+ NAT/PAT
+  ->
+ Internet
+  ->
+ TCP/UDP
+  ->
+ TLS when used
+  ->
+ Application protocol
+~~~
 
 ---
 
-## Quick Revision Questions
+# 41. Revision Questions
 
-1. What is the difference between `nslookup` and `dig`?
-2. What does a WHOIS query tell you?
-3. What is the difference between HTTP and HTTPS?
-4. Why is Telnet insecure?
-5. What does TLS provide?
-6. What is the difference between SSL and TLS?
-7. What are FTP's control and data connections?
-8. What is the difference between FTP, FTPS, and SFTP?
-9. Which protocol is mainly used to send email?
-10. What is the difference between POP3 and IMAP?
-11. What is the difference between cleartext and encrypted traffic?
-12. What is sniffing?
-13. What is spoofing?
-14. What is scanning vs enumeration?
-15. What is a MITM attack?
-16. What is phishing vs pharming?
-17. What is the difference between brute force, credential stuffing, and password spraying?
-18. What do ports 22, 23, 25, 53, 80, 110, 143, 443, 465, 587, 993, 995, and 990 represent?
+## Fundamentals
+
+1. What is a computer network?
+2. What is a protocol?
+3. What is a host?
+4. What is the difference between a client and a server?
+5. What is a port?
+6. What is the difference between a MAC address and an IP address?
+
+## OSI and devices
+
+7. What are the seven OSI layers?
+8. Which layer is a switch primarily associated with?
+9. Which layer is a router primarily associated with?
+10. Why does a switch use MAC addresses?
+11. Why does a router use IP addresses?
+12. What is the difference between a hub and a switch?
+13. What is an access point?
+14. What is a bridge?
+15. What is a repeater?
+16. What is an ONT?
+
+## Network types
+
+17. What is PAN?
+18. What is LAN?
+19. What is WLAN?
+20. What is CAN?
+21. What is MAN?
+22. What is WAN?
+23. What is a VPN?
+
+## Addressing and routing
+
+24. What is an IPv4 address?
+25. Does a laptop necessarily have a permanent IP?
+26. What are the three private IPv4 ranges?
+27. What is the difference between a private and public IP?
+28. Why can two separate private networks both use 192.168.1.10?
+29. What is a subnet mask?
+30. What does /24 mean?
+31. How does a host decide whether a destination is local?
+32. What is a default gateway?
+33. Why is the router's MAC used when sending to a remote IP?
+
+## DHCP, ARP, ICMP, NAT
+
+34. What does DHCP provide?
+35. What does DORA stand for?
+36. Does DHCP assign the MAC address?
+37. What does ARP do?
+38. Why does ARP commonly use FF:FF:FF:FF:FF:FF?
+39. What does ICMP do?
+40. What does ping use?
+41. Why can ping fail even when Internet access works?
+42. What is NAT?
+43. What is PAT/NAPT?
+44. How can multiple private devices share one public IPv4 address?
+45. What is port forwarding?
+46. What is the difference between NAT and a firewall?
+
+## Protocols
+
+47. What is TCP?
+48. What is UDP?
+49. What is DNS?
+50. What is the difference between nslookup and dig?
+51. What does WHOIS provide?
+52. What is HTTP?
+53. What is HTTPS?
+54. Why is Telnet insecure?
+55. What is SSH?
+56. What is TLS?
+57. What is the difference between SSL and TLS?
+58. What does an HTTPS certificate help provide?
+59. What are FTP's control and data connections?
+60. What is the difference between FTP, FTPS, and SFTP?
+61. Which protocol mainly sends email?
+62. What is the difference between SMTP, POP3, and IMAP?
+63. What are SPF, DKIM, and DMARC?
+
+## Security concepts
+
+64. What is sniffing?
+65. What is spoofing?
+66. What is scanning?
+67. What is enumeration?
+68. What is eavesdropping?
+69. What is MITM?
+70. What is phishing?
+71. What is pharming?
+72. What is the difference between DoS and DDoS?
+73. What is brute force?
+74. What is credential stuffing?
+75. What is password spraying?
+
+## Scenario questions
+
+76. A client can reach another local PC but cannot reach 8.8.8.8. What should you investigate first?
+77. A client can reach 8.8.8.8 but cannot resolve example.com. What is the likely area to investigate?
+78. Why can the same 192.168.1.10 exist in two different private networks?
+79. Why can Windows show an Ethernet adapter when no physical cable is attached?
+80. When a laptop opens an HTTPS website, where do DHCP, DNS, subnetting, ARP, the default gateway, NAT, TCP, TLS, and HTTP fit in the sequence?
 
 ---
 
-> **Safety note:** Use reconnaissance, packet capture, service probing, and authentication testing only against your own systems, CTF/TryHackMe labs, or systems where you have explicit permission.
+## Final Rules to Memorize
+
+~~~text
+1. Switch -> MAC
+2. Router -> IP
+3. ARP -> IPv4 address to MAC
+4. DHCP -> automatic IP configuration
+5. DNS -> name resolution
+6. ICMP -> diagnostics/control, ping
+7. NAT -> address translation
+8. PAT/NAPT -> address + port translation
+9. Default gateway -> next hop for remote destinations
+10. FF:FF:FF:FF:FF:FF -> Ethernet broadcast
+11. HTTP -> 80
+12. HTTPS -> 443
+13. Telnet -> 23
+14. SSH -> 22
+15. FTP -> 21
+16. SMTP -> 25 / 465 / 587
+17. POP3 -> 110 / 995
+18. IMAP -> 143 / 993
+19. SFTP -> 22 via SSH; separate from FTP
+20. Port number alone does not prove security
+~~~
+
+---
+
+## Safety Note
+
+Use reconnaissance, packet capture, service probing, password testing, and other security techniques only against your own systems, CTF/TryHackMe labs, or systems where you have explicit authorization.
