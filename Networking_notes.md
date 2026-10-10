@@ -1615,6 +1615,157 @@ HTTPS != proof that a website is trustworthy
 
 A malicious site can also use HTTPS.
 
+
+## 22.3 HTTP Request and Response Structure
+
+HTTP follows a request-response model. The client sends a request, and the server returns a response.
+
+### Example request
+
+```http
+GET /products?id=12 HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: text/html
+Cookie: session=example-value
+
+```
+
+Main parts:
+
+- **Request line:** method, path (including query string), and HTTP version.
+- **Headers:** metadata such as the host, accepted formats, content type, cookies, and authorization.
+- **Blank line:** separates headers from the message body.
+- **Body (optional):** commonly carries submitted form data or JSON in POST, PUT, and PATCH requests.
+
+### Example response
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 18
+
+{"status":"ok"}
+```
+
+Main parts:
+
+- **Status line:** HTTP version, status code, and reason phrase.
+- **Headers:** response metadata, such as content type, caching rules, cookies, and redirects.
+- **Body (optional):** the returned HTML, JSON, image, file, or other content.
+
+The exact headers and body depend on the request and server. HTTP/2 and HTTP/3 use different wire formats, although the same general request/response concepts and status codes apply.
+
+## 22.4 Common HTTP Methods
+
+| Method | Typical purpose | Important note |
+|---|---|---|
+| `GET` | Retrieve a resource | Should not be used to make a state-changing action |
+| `HEAD` | Retrieve response headers without the response body | Useful for checking metadata |
+| `POST` | Submit data or trigger processing | Often used for form submissions and creating resources |
+| `PUT` | Create or replace the target resource's state | Defined as idempotent |
+| `PATCH` | Apply a partial modification | Idempotency depends on the operation |
+| `DELETE` | Request removal of a resource | Defined as idempotent, though the response can vary |
+| `OPTIONS` | Discover communication options supported by a resource/server | Often seen in CORS preflight requests |
+
+**Safe** means the method is intended not to change the resource state. **Idempotent** means repeating the same request has the same intended effect as performing it once. These properties do not guarantee that every application implementation behaves correctly.
+
+## 22.5 Useful HTTP Headers and Data Locations
+
+| Header or location | Purpose |
+|---|---|
+| `Host` | Identifies the target host in HTTP/1.1 |
+| `User-Agent` | Describes the client software |
+| `Accept` | Lists response media types the client can accept |
+| `Content-Type` | Describes the format of the message body, such as `application/json` |
+| `Content-Length` | Gives the body length in bytes when used |
+| `Authorization` | Carries authentication credentials or tokens |
+| `Cookie` | Sends cookies stored by the client |
+| `Set-Cookie` | Instructs the client to store/update a cookie |
+| `Location` | Commonly identifies a redirect target or newly created resource |
+| `Cache-Control` | Provides caching directives |
+| Query string | Data in the URL, such as `?id=12` |
+| Request body | Submitted data, often form fields or JSON |
+
+A cookie may hold a session identifier; the server typically keeps the associated session state. Treat session IDs and authorization tokens as secrets.
+
+## 22.6 HTTP Status Codes
+
+The first digit groups status codes by meaning:
+
+| Code range | Class | General meaning |
+|---|---|---|
+| `1xx` | Informational | The request has been received and the process is continuing |
+| `2xx` | Success | The request was successfully received, understood, and handled |
+| `3xx` | Redirection | Further action is needed, often by following a redirect |
+| `4xx` | Client error | There is a problem with the request or it cannot be fulfilled as sent |
+| `5xx` | Server error | The server failed to fulfil an apparently valid request |
+
+### Common status codes
+
+| Status | Name | Meaning and practical notes |
+|---:|---|---|
+| **200** | OK | Request succeeded. The response body often contains the requested content. |
+| **201** | Created | A resource was created, for example after creating a user or blog post. A `Location` header may identify it. |
+| **202** | Accepted | The request was accepted for processing, but processing may not be complete. |
+| **204** | No Content | Request succeeded, with no response body. |
+| **206** | Partial Content | The server is returning part of a representation, commonly for a range request. |
+| **301** | Moved Permanently | The resource has a permanent redirect. Clients and search engines may update the URL they use. |
+| **302** | Found | A temporary redirect. Clients commonly follow the `Location` header. |
+| **304** | Not Modified | A cache-validation response telling the client it can reuse its cached representation. |
+| **400** | Bad Request | The server considers the request malformed or invalid. Missing or invalid parameters can cause this, depending on the application. |
+| **401** | Unauthorized | Valid authentication is missing or has failed. Despite the name, this usually means the client must authenticate. |
+| **403** | Forbidden | The server understood the request but refuses to fulfil it. Authentication may or may not be the issue. |
+| **404** | Not Found | The resource was not found, or the server chooses not to disclose that it exists. |
+| **405** | Method Not Allowed | The method is not supported for this resource. An `Allow` header may list permitted methods. |
+| **409** | Conflict | The request conflicts with the current state of the resource. |
+| **415** | Unsupported Media Type | The server refuses the request body format, often indicated by `Content-Type`. |
+| **422** | Unprocessable Content | The content type and syntax are understood, but the instructions or data cannot be processed (often validation errors). |
+| **429** | Too Many Requests | The client has sent too many requests in a given period. A `Retry-After` header may say when to retry. |
+| **500** | Internal Server Error | The server encountered an unexpected condition while handling the request. |
+| **502** | Bad Gateway | A gateway or proxy received an invalid response from an upstream server. |
+| **503** | Service Unavailable | The server is temporarily unable to handle the request, commonly due to overload or maintenance. A `Retry-After` header may be present. |
+| **504** | Gateway Timeout | A gateway or proxy did not receive a timely response from an upstream server. |
+
+**Important distinctions:**
+
+- `401` generally indicates an authentication problem; `403` indicates refusal even though the request was understood.
+- `404` does not prove that a path never existed. Some applications return it to hide protected resources.
+- `301` is permanent; `302` is temporary. Redirect handling for methods and request bodies can vary by status code and client behavior.
+- `500` points to a server-side failure; `502`, `503`, and `504` commonly involve temporary server, gateway, or upstream-service problems.
+- A status code alone does not prove a vulnerability. Interpret it alongside the response body, headers, application behavior, and authorization rules.
+
+### Inspect status codes with curl
+
+```bash
+# Show response headers
+curl -I https://example.com
+
+# Print only the final HTTP status code
+curl -s -o /dev/null -w "%{http_code}\n" https://example.com
+
+# Show request/response details, including redirects and TLS diagnostics
+curl -v https://example.com
+
+# Follow redirects and print the final status code
+curl -L -s -o /dev/null -w "%{http_code}\n" https://example.com
+```
+
+Note: `curl -I` sends a `HEAD` request. Some sites handle `HEAD` differently from `GET`; use a normal `GET` request when you need to compare the actual page response.
+
+### HTTP status codes in Burp Suite and web testing
+
+When reviewing an authorized lab or application in Burp Suite, inspect:
+
+1. **Request:** method, path, parameters, headers, cookies, and body.
+2. **Status code:** whether the server reports success, redirection, a client error, or a server error.
+3. **Response headers:** look for `Location`, `Set-Cookie`, `Content-Type`, and caching/security-related headers.
+4. **Response body:** check whether the response contains data, a validation message, or an error.
+5. **Authorization behavior:** compare allowed and denied requests only within an authorized test. A `200` response does not guarantee access control is correct, and a `403` alone does not prove the application is secure.
+
+Useful visual reference: [HTTP Cats](https://http.cat/) displays illustrations for HTTP status codes.
+
+
 ---
 
 # 23. TLS and SSL
