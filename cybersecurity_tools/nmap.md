@@ -1,177 +1,1080 @@
-# Nmap
+# Nmap Learning Notes
 
-Nmap (Network Mapper) is a network discovery and security-auditing tool. It can identify reachable hosts, probe TCP and UDP ports, detect services and versions, and perform selected checks using the Nmap Scripting Engine (NSE).
+> Beginner-to-intermediate notes based on hands-on Nmap practice.
 
-## 1. Installation and Help
+## 1. What is Nmap?
 
-Kali Linux usually includes Nmap. Verify it with:
+**Nmap (Network Mapper)** is a network discovery and security auditing tool.
 
-```bash
-nmap --version
-nmap --help
-```
+It can be used to:
+- Discover hosts
+- Scan TCP and UDP ports
+- Identify services and versions
+- Attempt OS fingerprinting
+- Analyze firewall filtering
+- Run NSE scripts
+- Perform traceroute
+- Save scan results for later analysis
 
-On Debian-based systems, install it with:
+---
 
-```bash
-sudo apt update
-sudo apt install nmap
-```
+# 2. Nmap Mental Model
 
-## 2. Lab Target
-
-Example isolated lab:
-
-- Kali interface on the host-only network: `192.168.56.102`
-- Metasploitable 2 target: `192.168.56.101`
-
-Replace these addresses with the values in your own lab. Scan only systems you own or are authorized to assess.
-
-Check reachability:
-
-```bash
-ping -c 4 192.168.56.101
-```
-
-## 3. Common Scans
-
-### Default TCP port scan
-
-```bash
-nmap 192.168.56.101
-```
-
-Scans Nmap's default set of 1,000 most common TCP ports.
-
-### Scan selected ports
-
-```bash
-nmap -p 21,22,80,445,3306 192.168.56.101
-```
-
-### Scan all TCP ports
-
-```bash
-nmap -p- 192.168.56.101
-```
-
-This checks TCP ports 1–65535 and can take longer than a default scan.
-
-### TCP SYN scan
-
-```bash
-sudo nmap -sS -p 21,22,80 192.168.56.101
-```
-
-A SYN scan sends TCP SYN probes. A SYN/ACK response usually indicates an open port; a reset response usually indicates a closed port. Nmap commonly resets the half-open connection after identifying an open port.
-
-### TCP connect scan
-
-```bash
-nmap -sT -p 21,22,80 192.168.56.101
-```
-
-A connect scan uses the operating system's TCP connect function and completes the TCP handshake when a port is open. It is useful when raw-packet privileges are unavailable.
-
-### Service and version detection
-
-```bash
-nmap -sV 192.168.56.101
-```
-
-Nmap probes discovered ports to help identify the service and version. Results are estimates and should be validated.
-
-### OS detection
-
-```bash
-sudo nmap -O 192.168.56.101
-```
-
-OS detection uses network-response characteristics and may be inconclusive, especially when responses are filtered or the target is unusual.
-
-### Default scripts and version detection
-
-```bash
-nmap -sC -sV 192.168.56.101
-```
-
-This runs Nmap's default script set and version detection. Use it only where scanning and script checks are authorized.
-
-### UDP scan
-
-```bash
-sudo nmap -sU --top-ports 20 192.168.56.101
-```
-
-UDP scans can be slow and ambiguous. An open UDP service may not reply to a probe, and ICMP errors can indicate closed or filtered ports.
-
-### Save results
-
-```bash
-nmap -sV -oN nmap-results.txt 192.168.56.101
-nmap -sV -oX nmap-results.xml 192.168.56.101
-```
-
-## 4. Interpreting Port States
-
-- **open** — an application is accepting connections or responding as an open service.
-- **closed** — the host is reachable, but no service is listening on that port.
-- **filtered** — Nmap cannot determine whether the port is open because filtering or another network condition prevents a clear answer.
-- **open|filtered** — Nmap cannot distinguish between an open port and a filtered port for that probe.
-
-A port state describes what the scan could infer at that time; it is not a complete security verdict.
-
-## 5. SYN Scan vs. Connect Scan in Wireshark
-
-Capture on Kali's host-only interface (in the example lab, `eth1`) while running a scan.
-
-Useful display filter:
+A useful way to understand Nmap is:
 
 ```text
-ip.addr == 192.168.56.101 && tcp
+Target
+  ↓
+Host Discovery
+  ↓
+Port Scanning
+  ↓
+Port State
+  ↓
+Service / Version Detection
+  ↓
+OS Detection
+  ↓
+NSE / Additional Enumeration
+  ↓
+Output / Reporting
 ```
 
-For SSH only:
+Important distinction:
 
 ```text
-ip.addr == 192.168.56.101 && tcp.port == 22
+-Pn  → controls host discovery behavior
+-sS  → controls TCP port-scanning technique
+-sU  → controls UDP port-scanning technique
+-sA  → performs TCP ACK/filtering analysis
 ```
 
-Typical SYN scan sequence for an open port:
+---
 
-1. Kali → target: `SYN`
-2. Target → Kali: `SYN, ACK`
-3. Kali → target: often `RST` or `RST, ACK`, aborting the half-open connection
+# 3. Commands Studied
 
-Typical connect scan sequence for an open port:
+## 3.1 Basic Nmap
 
-1. Kali → target: `SYN`
-2. Target → Kali: `SYN, ACK`
-3. Kali → target: `ACK`, completing the handshake
-4. The connection is then closed; teardown packets vary.
+```bash
+nmap example.com
+```
 
-**Important:** An RST packet does not automatically mean a port is closed. Check the packet direction and the preceding exchange. A target RST in response to a SYN commonly indicates a closed port; a client-side RST after a target SYN/ACK is consistent with a SYN scan of an open port.
+Runs Nmap using its default scan behavior.
 
-## 6. Practice Exercises
+On Linux with sufficient privileges, the default TCP port scan is normally a SYN-based scan.
 
-Use only the Metasploitable lab target.
+---
 
-- [ ] Run a default scan and record the open ports.
-- [ ] Compare `-sS` and `-sT` against ports 21 and 22.
-- [ ] Run `-sV` and explain what each detected service does.
-- [ ] Capture both scans in Wireshark and identify SYN, SYN/ACK, ACK, FIN, and RST packets.
-- [ ] Scan all TCP ports with `-p-` and compare the results with the default scan.
-- [ ] Save a scan to a text file and write a short summary of the findings.
+# 4. Target Specification
 
-## 7. Troubleshooting
+## 4.1 List Scan: `-sL`
 
-- **No response to ping:** ICMP may be blocked; verify VM network adapters and the target IP before drawing conclusions.
-- **Host appears down:** In an authorized lab, try `-Pn` to skip host discovery: `nmap -Pn -p 22 192.168.56.101`.
-- **Wireshark shows no scan packets:** Confirm capture is running on the interface connected to the target network.
-- **Different results between scans:** SYN and connect scans use different connection behavior; firewalls, service changes, packet loss, and timing can affect results.
+```bash
+nmap -sL example.com
+```
 
-## References
+### Purpose
 
-- [Official Nmap Reference Guide](https://nmap.org/book/man.html)
-- [Nmap Port Scanning Techniques](https://nmap.org/book/man-port-scanning-techniques.html)
-- [Nmap Service and Version Detection](https://nmap.org/book/man-version-detection.html)
+Lists the target(s) and performs target/name resolution without performing a normal port scan.
+
+Useful for seeing:
+- Target address
+- Reverse/forward DNS information
+- What Nmap considers the target
+
+Example:
+
+```text
+example.com → 172.66.147.243
+```
+
+### Important
+
+`-sL` does **not** mean the host is up or down.
+
+---
+
+## 4.2 Input List: `-iL`
+
+```bash
+nmap -iL input.txt
+```
+
+Reads targets from a file.
+
+Example `input.txt`:
+
+```text
+192.168.1.10
+example.com
+scanme.nmap.org
+```
+
+Then:
+
+```bash
+nmap -iL input.txt
+```
+
+scans the listed targets.
+
+If you see:
+
+```text
+Failed to open input file input.txt
+```
+
+Nmap cannot find the file at the specified path.
+
+---
+
+# 5. Host Discovery
+
+## 5.1 `-sn`
+
+```bash
+nmap -sn example.com
+```
+
+### Meaning
+
+Host discovery only.
+
+It asks:
+
+> Is the host reachable?
+
+It does not perform a normal port scan.
+
+Example:
+
+```text
+Host is up
+```
+
+---
+
+## 5.2 `-Pn`
+
+```bash
+sudo nmap -Pn -p 80,443 example.com
+```
+
+### Meaning
+
+Skip host discovery and assume the target is up.
+
+Flow:
+
+```text
+Normal:
+Host discovery
+    ↓
+Port scan
+
+-Pn:
+Skip host discovery
+    ↓
+Port scan directly
+```
+
+### Important
+
+`-Pn` does **not** define the port-scan technique.
+
+For example:
+
+```bash
+nmap -Pn example.com
+```
+
+means:
+
+```text
+Assume host is up
++
+Use Nmap's normal/default scan behavior
+```
+
+While:
+
+```bash
+nmap -Pn -sS example.com
+```
+
+means:
+
+```text
+Assume host is up
++
+Use TCP SYN scanning
+```
+
+### `-sn` vs `-Pn`
+
+```text
+-sn → perform host discovery, then stop
+-Pn → skip host discovery and continue scanning
+```
+
+---
+
+# 6. TCP SYN Scan: `-sS`
+
+```bash
+sudo nmap -sS example.com
+```
+
+### Purpose
+
+Find open TCP ports using SYN probes.
+
+Simplified packet flow:
+
+```text
+Nmap ── SYN ─────→ Target
+
+Open port:
+Nmap ←─ SYN/ACK ── Target
+
+Closed port:
+Nmap ←─ RST ────── Target
+```
+
+Typical interpretation:
+
+```text
+SYN/ACK → open
+RST     → closed
+No useful response → usually filtered
+```
+
+### Important
+
+`-sS` is the main TCP port-scanning technique you have learned.
+
+---
+
+# 7. TCP Connect Scan: `-sT`
+
+```bash
+nmap -sT example.com
+```
+
+### Purpose
+
+Find TCP ports using the operating system's normal TCP `connect()` mechanism.
+
+Unlike a SYN scan, it completes a normal TCP connection when the port is open.
+
+Simplified:
+
+```text
+SYN
+ ↓
+SYN/ACK
+ ↓
+ACK
+ ↓
+Connection established
+```
+
+### `-sS` vs `-sT`
+
+```text
+-sS → SYN scan; normally does not complete the normal TCP connection
+-sT → TCP Connect scan; establishes the TCP connection
+```
+
+`-sT` is especially useful when raw-packet scanning is unavailable.
+
+---
+
+# 8. UDP Scan: `-sU`
+
+```bash
+sudo nmap -sU example.com
+```
+
+### Purpose
+
+Scan UDP ports.
+
+UDP does not have a TCP-style handshake.
+
+Simplified:
+
+```text
+Nmap ── UDP probe ──→ Target
+```
+
+Possible results:
+
+```text
+UDP response       → open
+ICMP unreachable   → closed
+No response        → open|filtered
+```
+
+### Why `open|filtered`?
+
+A UDP service may be open but simply not respond to an unexpected UDP packet.
+
+Therefore:
+
+```text
+open|filtered
+```
+
+means Nmap cannot distinguish:
+
+```text
+OPEN
+or
+FILTERED
+```
+
+It does NOT mean both are confirmed.
+
+---
+
+# 9. TCP ACK Scan: `-sA`
+
+```bash
+sudo nmap -sA example.com
+```
+
+### Purpose
+
+Analyze TCP filtering/firewall behavior.
+
+Nmap sends an ACK probe:
+
+```text
+Nmap ── ACK ─────→ Target
+```
+
+Typical interpretation:
+
+```text
+RST response  → unfiltered
+No response   → filtered
+```
+
+### Important
+
+`unfiltered` does **not** mean `open`.
+
+An ACK scan normally cannot determine whether an unfiltered port is open or closed.
+
+---
+
+# 10. `-sS` vs `-sA` vs `-sU`
+
+```text
+-sS
+ ↓
+Find open TCP ports
+
+-sA
+ ↓
+Analyze TCP filtering/firewall behavior
+
+-sU
+ ↓
+Find UDP services/ports
+```
+
+Easy memory:
+
+```text
+-sS → SYN → open TCP ports
+-sA → ACK → filtering
+-sU → UDP → UDP services
+```
+
+---
+
+# 11. Port Selection: `-p`
+
+## Single port
+
+```bash
+nmap -p 80 example.com
+```
+
+Scans only port 80.
+
+## Multiple ports
+
+```bash
+nmap -p 21,80,443 example.com
+```
+
+Scans ports 21, 80, and 443.
+
+## Range
+
+```bash
+nmap -p 1-1000 example.com
+```
+
+Scans ports 1 through 1000.
+
+## All TCP ports
+
+```bash
+nmap -p- example.com
+```
+
+Scans TCP ports 1–65535.
+
+### Common mistake
+
+This is incorrect if you mean multiple ports:
+
+```bash
+nmap -p 80 443 21 example.com
+```
+
+Nmap interprets the arguments after `80` as separate targets.
+
+Correct:
+
+```bash
+nmap -p 80,443,21 example.com
+```
+
+---
+
+# 12. Port States
+
+Nmap's port `STATE` describes what Nmap can determine from its probes.
+
+## `open`
+
+```text
+80/tcp open http
+```
+
+A service is accepting connections.
+
+---
+
+## `closed`
+
+```text
+23/tcp closed telnet
+```
+
+The host is reachable, but no service is listening on that port.
+
+A TCP RST commonly indicates this for a SYN scan.
+
+---
+
+## `filtered`
+
+```text
+21/tcp filtered ftp
+```
+
+Something is preventing Nmap from determining the port state.
+
+Common reasons include:
+- Firewall
+- Packet filtering
+- Silent packet dropping
+- Network filtering
+
+Important:
+
+```text
+filtered ≠ closed
+```
+
+---
+
+## `unfiltered`
+
+Commonly seen with `-sA`:
+
+```text
+unfiltered
+```
+
+Nmap can reach the port, but the scan technique cannot determine whether the port is open or closed.
+
+Important:
+
+```text
+unfiltered ≠ open
+```
+
+---
+
+## `open|filtered`
+
+Commonly seen with UDP:
+
+```text
+open|filtered
+```
+
+Nmap cannot distinguish between an open port and a filtered port.
+
+---
+
+## `closed|filtered`
+
+Nmap cannot distinguish between closed and filtered.
+
+---
+
+# 13. `no response`
+
+Example:
+
+```text
+Not shown: 1000 filtered tcp ports (no-response)
+```
+
+This means Nmap sent probes but did not receive a useful response for those ports.
+
+It does NOT automatically prove:
+- The host is down
+- The port is closed
+- A firewall definitely exists
+
+Possible causes include:
+- Filtering
+- Packet loss
+- Rate limiting
+- Unresponsive services
+- Network conditions
+
+---
+
+# 14. Service and Version Detection: `-sV`
+
+```bash
+sudo nmap -sV -p 22,80,443 example.com
+```
+
+### Purpose
+
+Attempts to identify:
+- Service
+- Software
+- Version
+
+Example:
+
+```text
+PORT    STATE SERVICE VERSION
+80/tcp  open  http    ...
+```
+
+Important distinction:
+
+```text
+-sS → Is a TCP port open?
+-sV → What service/software is running?
+```
+
+Nmap probes the service instead of simply assuming that a port number tells you the software.
+
+---
+
+# 15. OS Detection: `-O`
+
+```bash
+sudo nmap -O -p 22,80,443 scanme.nmap.org
+```
+
+### Purpose
+
+Attempts to identify the target operating system from network behavior/fingerprints.
+
+Example:
+
+```text
+OS details: Linux ...
+```
+
+### Important warning
+
+OS detection is not guaranteed to be accurate.
+
+You may see:
+
+```text
+Warning: OSScan results may be unreliable
+```
+
+when Nmap does not have enough information.
+
+For example, Nmap may want at least:
+- One known open port
+- One known closed port
+
+OS detection can also be affected by:
+- Firewalls
+- NAT
+- Virtualization
+- CDNs
+- Proxies
+
+---
+
+# 16. Aggressive Scan: `-A`
+
+```bash
+sudo nmap -A example.com
+```
+
+### `-A` enables several detection features
+
+Conceptually:
+
+```text
+-A
+├── OS detection
+├── Service/version detection
+├── Default NSE scripts
+└── Traceroute
+```
+
+It provides much more information than a basic scan and can take significantly longer.
+
+### Important
+
+`-A` does NOT mean:
+
+> Scan every port.
+
+It enables aggressive detection features; it does not automatically scan all 65,535 TCP ports.
+
+---
+
+# 17. NSE / Nmap Scripting Engine
+
+NSE is Nmap's scripting system.
+
+Important options:
+
+```bash
+nmap -sC target
+```
+
+```bash
+nmap --script=<script> target
+```
+
+NSE can automate tasks such as:
+- Service discovery
+- Additional enumeration
+- Version enhancement
+- Vulnerability checks
+- Other network tasks
+
+NSE scripts are written in Lua.
+
+These should be used only against systems you are authorized to test.
+
+---
+
+# 18. Output
+
+## Grepable output: `-oG`
+
+```bash
+nmap -sS example.com -oG nmap_result
+```
+
+Saves results in grepable format.
+
+View it:
+
+```bash
+cat nmap_result
+```
+
+Search it:
+
+```bash
+grep open nmap_result
+```
+
+Useful tools for processing results:
+
+```text
+grep
+awk
+sed
+cut
+sort
+```
+
+## Other output formats
+
+```bash
+-oN file     # normal output
+-oG file     # grepable output
+-oX file     # XML output
+-oA name     # multiple standard formats
+```
+
+---
+
+# 19. Traceroute
+
+There are two related concepts.
+
+## Linux traceroute
+
+```bash
+traceroute scanme.nmap.org
+```
+
+This is primarily a traceroute command.
+
+It attempts to show the network hops between your machine and the destination.
+
+Example:
+
+```text
+1  10.0.2.2
+2  * * *
+3  * * *
+...
+```
+
+### Hop
+
+A hop is a router/network device encountered along the route.
+
+Conceptually:
+
+```text
+Your machine
+    ↓
+Router 1       ← Hop 1
+    ↓
+Router 2       ← Hop 2
+    ↓
+Router 3       ← Hop 3
+    ↓
+Destination
+```
+
+### `* * *`
+
+Means no traceroute response was received for that probe.
+
+It does not necessarily mean the route is broken.
+
+Routers/firewalls may simply not respond to traceroute probes.
+
+---
+
+## Nmap `--traceroute`
+
+```bash
+nmap --traceroute example.com
+```
+
+Important:
+
+```text
+--traceroute
+```
+
+does not mean "run only traceroute".
+
+Nmap still performs a normal scan and then includes traceroute information.
+
+To reduce scan time while learning:
+
+```bash
+nmap -p 80 --traceroute example.com
+```
+
+---
+
+# 20. `--trace` vs `--traceroute`
+
+Incorrect:
+
+```bash
+nmap --trace example.com
+```
+
+Correct:
+
+```bash
+nmap --traceroute example.com
+```
+
+`--trace` should not be confused with Nmap's traceroute option.
+
+---
+
+# 21. Timing and Slow Scans
+
+Timing templates:
+
+```text
+-T0 → very slow
+-T1 → slow
+-T2 → polite
+-T3 → normal/default
+-T4 → fast
+-T5 → very aggressive
+```
+
+Example:
+
+```bash
+sudo nmap -sS -T4 example.com
+```
+
+Other performance options to learn later:
+
+```bash
+--max-retries
+--host-timeout
+--scan-delay
+--max-scan-delay
+--min-rate
+--max-rate
+```
+
+### Retransmission warning
+
+Example:
+
+```text
+Warning: 45.33.32.156 giving up on port because retransmission cap hit (10).
+```
+
+Meaning:
+
+Nmap sent a probe, did not receive a useful response, retried it, and eventually stopped retrying that port.
+
+This can be caused by:
+- Packet loss
+- Filtering
+- Rate limiting
+- High latency
+- Network congestion
+- Target behavior
+
+It does NOT automatically mean the host is down.
+
+---
+
+# 22. Useful Comparison Table
+
+| Option | Main purpose |
+|---|---|
+| `-sL` | List targets / DNS information |
+| `-sn` | Host discovery without normal port scanning |
+| `-Pn` | Skip host discovery; assume host is up |
+| `-sS` | TCP SYN scan |
+| `-sT` | TCP Connect scan |
+| `-sU` | UDP scan |
+| `-sA` | TCP ACK/filtering scan |
+| `-p` | Choose ports |
+| `-iL` | Read targets from a file |
+| `-sV` | Service/version detection |
+| `-O` | OS detection |
+| `-A` | Aggressive detection |
+| `-sC` | Default NSE scripts |
+| `--script` | Run selected NSE scripts |
+| `-oG` | Grepable output |
+| `-oN` | Normal output |
+| `-oX` | XML output |
+| `-oA` | Save multiple output formats |
+| `--traceroute` | Nmap scan + traceroute |
+
+---
+
+# 23. The Most Important Mental Model
+
+```text
+HOST DISCOVERY
+    │
+    ├── -sn → discover hosts
+    ├── -Pn → skip discovery
+    ├── -PS → TCP SYN host-discovery probe
+    ├── -PA → TCP ACK host-discovery probe
+    ├── -PU → UDP host-discovery probe
+    ├── -PE → ICMP Echo host discovery
+    └── -PR → ARP discovery (local Ethernet)
+
+PORT SCANNING
+    │
+    ├── -sS → TCP SYN
+    ├── -sT → TCP Connect
+    ├── -sA → TCP ACK/filtering
+    └── -sU → UDP
+
+PORT SELECTION
+    │
+    └── -p
+
+DETECTION
+    │
+    ├── -sV → service/version
+    ├── -O  → OS
+    └── -A  → several detection features
+
+SCRIPTING
+    │
+    ├── -sC
+    └── --script
+
+OUTPUT
+    │
+    ├── -oN
+    ├── -oG
+    ├── -oX
+    └── -oA
+
+NETWORK PATH
+    │
+    └── --traceroute
+```
+
+---
+
+# 24. Recommended Learning Order
+
+For practical cybersecurity learning:
+
+```text
+1. Target specification
+2. Host discovery
+3. TCP scanning
+4. UDP scanning
+5. Port states
+6. Port selection
+7. Service/version detection
+8. OS detection
+9. NSE
+10. Output formats
+11. Timing/performance
+12. Traceroute
+13. Firewall behavior
+14. Advanced scan techniques
+15. Nmap internals/source code
+```
+
+---
+
+# 25. Important Commands to Remember
+
+```bash
+# List target
+nmap -sL example.com
+
+# Discover host
+nmap -sn example.com
+
+# Skip host discovery
+nmap -Pn example.com
+
+# TCP SYN scan
+sudo nmap -sS example.com
+
+# TCP Connect scan
+nmap -sT example.com
+
+# UDP scan
+sudo nmap -sU example.com
+
+# ACK/filtering scan
+sudo nmap -sA example.com
+
+# Specific ports
+nmap -p 21,22,80,443 example.com
+
+# Port range
+nmap -p 1-1000 example.com
+
+# All TCP ports
+nmap -p- example.com
+
+# Service/version detection
+sudo nmap -sV example.com
+
+# OS detection
+sudo nmap -O example.com
+
+# Aggressive scan
+sudo nmap -A example.com
+
+# Read targets from file
+nmap -iL input.txt
+
+# Save grepable results
+nmap -sS example.com -oG nmap_result
+
+# Nmap traceroute
+nmap --traceroute example.com
+
+# Linux traceroute
+traceroute example.com
+```
+
+---
+
+# 26. Safety / Authorization
+
+Use Nmap scans only against:
+- Systems you own
+- Your own lab
+- Intentionally provided training targets
+- Systems for which you have explicit authorization
+
+Good practice targets include intentionally provided security-training systems such as Nmap's `scanme.nmap.org`, subject to the target's current usage policy.
+
+---
+
+# 27. Current Progress
+
+Studied so far:
+
+```text
+✓ -sL
+✓ -sn
+✓ -Pn
+✓ -sS
+✓ -sT
+✓ -sU
+✓ -sA
+✓ -p
+✓ -iL
+✓ -oG
+✓ -A
+✓ --traceroute
+✓ traceroute
+✓ -sV
+✓ -O
+✓ -PS
+```
+
+Next topics:
+
+```text
+→ -PA
+→ -PU
+→ -PE
+→ -PR
+→ Other host-discovery methods
+→ More TCP scan techniques
+→ NSE
+→ Advanced performance
+→ Nmap internals
+```
